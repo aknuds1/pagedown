@@ -1,12 +1,12 @@
 {
-    "name": "pagedown",
-    "version": "1.1.0",
-    "description": "markdown converter, based on showdown",
-    "repository": { "type": "hg", "url": "https://code.google.com/p/pagedown/" },
-    "keywords": ["markdown"],
-    "license": "MIT",
-    "files": ["Markdown.Converter.js", "Markdown.Sanitizer.js", "node-pagedown.js"],
-    "main": "node-pagedown.js",
-    "bugs": "http://code.google.com/p/pagedown/issues/list",
-    "homepage": "http://code.google.com/p/pagedown/wiki/PageDown"
+  "name": "PageDown",
+  "version": "1.1.1",
+  "description": "Markdown converter, based on Showdown",
+  "repository": { "type": "git", "url": "https://github.com/aknuds1/pagedown" },
+  "keywords": ["markdown"],
+  "license": "MIT",
+  "files": ["Markdown.Converter.js", "Markdown.Sanitizer.js", "node-pagedown.js"],
+  "main": "node-pagedown.js",
+  "bugs": "https://github.com/aknuds1/pagedown/issues",
+  "homepage": "http://code.google.com/p/pagedown/wiki/PageDown"
 }
