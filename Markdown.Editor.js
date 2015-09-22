@@ -138,12 +138,12 @@
 
     var setPanelScrollTops = function () {
       if (panels.preview) {
-        panels.preview.scrollTop = (panels.preview.scrollHeight -
-          panels.preview.clientHeight) * getScaleFactor(panels.preview);
-        }
-      };
+        panels.preview.scrollTop = (panels.preview.scrollHeight - panels.preview.clientHeight) *
+          getScaleFactor(panels.preview);
+      }
+    };
 
-      var pushPreviewHtml = function (text) {
+    var pushPreviewHtml = function (text) {
         var emptyTop = position.getTop(panels.input) - getDocScrollTop();
 
         if (panels.preview) {
@@ -170,7 +170,7 @@
         }
       };
 
-      var makePreviewHtml = function () {
+    var makePreviewHtml = function () {
         // If there is no registered preview panel
         // there is nothing to do.
         if (!panels.preview) {
@@ -197,8 +197,8 @@
         pushPreviewHtml(text);
       };
 
-      // setTimeout is already used.  Used as an event listener.
-      var applyTimeout = function () {
+    // setTimeout is already used.  Used as an event listener.
+    var applyTimeout = function () {
 
         if (timeout) {
           clearTimeout(timeout);
@@ -220,204 +220,199 @@
         }
       };
 
-      this.refresh = function (requiresRefresh) {
+    this.refresh = function (requiresRefresh) {
 
-        if (requiresRefresh) {
-          oldInputText = "";
-          makePreviewHtml();
-        }
-        else {
-          applyTimeout();
-        }
-      };
-
-      this.processingTime = function () {
-        return elapsedTime;
-      };
-
-      // IE doesn't let you use innerHTML if the element is contained somewhere in a table
-      // (which is the case for inline editing) -- in that case, detach the element, set the
-      // value, and reattach. Yes, that *is* ridiculous.
-      var ieSafePreviewSet = function (text) {
-        var preview = panels.preview;
-        var parent = preview.parentNode;
-        var sibling = preview.nextSibling;
-        parent.removeChild(preview);
-        preview.innerHTML = text;
-        if (!sibling) {
-          parent.appendChild(preview);
-        } else {
-          parent.insertBefore(preview, sibling);
-        }
-      };
-
-      var init = function () {
-        setupEvents(panels.input, applyTimeout);
+      if (requiresRefresh) {
+        oldInputText = "";
         makePreviewHtml();
+      }
+      else {
+        applyTimeout();
+      }
+    };
 
-        if (panels.preview) {
-          panels.preview.scrollTop = 0;
-        }
-      };
+    this.processingTime = function () {
+      return elapsedTime;
+    };
 
-      init();
+    // IE doesn't let you use innerHTML if the element is contained somewhere in a table
+    // (which is the case for inline editing) -- in that case, detach the element, set the
+    // value, and reattach. Yes, that *is* ridiculous.
+    var ieSafePreviewSet = function (text) {
+      var preview = panels.preview;
+      var parent = preview.parentNode;
+      var sibling = preview.nextSibling;
+      parent.removeChild(preview);
+      preview.innerHTML = text;
+      if (!sibling) {
+        parent.appendChild(preview);
+      } else {
+        parent.insertBefore(preview, sibling);
+      }
+    };
+
+    var init = function () {
+      setupEvents(panels.input, applyTimeout);
+      makePreviewHtml();
+
+      if (panels.preview) {
+        panels.preview.scrollTop = 0;
+      }
+    };
+
+    init();
+  }
+
+  // A collection of the important regions on the page.
+  // Cached so we don't have to keep traversing the DOM.
+  // Also holds ieCachedRange and ieCachedScrollTop, where necessary; working around
+  // this issue:
+  // Internet explorer has problems with CSS sprite buttons that use HTML
+  // lists.  When you click on the background image "button", IE will
+  // select the non-existent link text and discard the selection in the
+  // textarea.  The solution to this is to cache the textarea selection
+  // on the button's mousedown event and set a flag.  In the part of the
+  // code where we need to grab the selection, we check for the flag
+  // and, if it's set, use the cached area instead of querying the
+  // textarea.
+  //
+  // This ONLY affects Internet Explorer (tested on versions 6, 7
+  // and 8) and ONLY on button clicks.  Keyboard shortcuts work
+  // normally since the focus never leaves the textarea.
+  function PanelCollection(postfix) {
+    this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
+    this.preview = doc.getElementById("wmd-preview" + postfix);
+    this.input = doc.getElementById("wmd-input" + postfix);
+  }
+
+  function CommandManager(pluginHooks, getString, converter) {
+    this.hooks = pluginHooks;
+    this.getString = getString;
+    this.converter = converter;
+  }    // The input textarea state/contents.
+
+  // before: contains all the text in the input box BEFORE the selection.
+  // after: contains all the text in the input box AFTER the selection.
+  function Chunks() { }
+
+  // startRegex: a regular expression to find the start tag
+  // endRegex: a regular expresssion to find the end tag
+  Chunks.prototype.findTags = function (startRegex, endRegex) {
+    var chunkObj = this;
+    var regex;
+
+    if (startRegex) {
+      regex = util.extendRegExp(startRegex, "", "$");
+
+      this.before = this.before.replace(regex, function (match) {
+        chunkObj.startTag = chunkObj.startTag + match;
+        return "";
+      });
+
+      regex = util.extendRegExp(startRegex, "^", "");
+
+      this.selection = this.selection.replace(regex, function (match) {
+        chunkObj.startTag = chunkObj.startTag + match;
+        return "";
+      });
     }
 
-    // A collection of the important regions on the page.
-    // Cached so we don't have to keep traversing the DOM.
-    // Also holds ieCachedRange and ieCachedScrollTop, where necessary; working around
-    // this issue:
-    // Internet explorer has problems with CSS sprite buttons that use HTML
-    // lists.  When you click on the background image "button", IE will
-    // select the non-existent link text and discard the selection in the
-    // textarea.  The solution to this is to cache the textarea selection
-    // on the button's mousedown event and set a flag.  In the part of the
-    // code where we need to grab the selection, we check for the flag
-    // and, if it's set, use the cached area instead of querying the
-    // textarea.
-    //
-    // This ONLY affects Internet Explorer (tested on versions 6, 7
-    // and 8) and ONLY on button clicks.  Keyboard shortcuts work
-    // normally since the focus never leaves the textarea.
-    function PanelCollection(postfix) {
-      this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
-      this.preview = doc.getElementById("wmd-preview" + postfix);
-      this.input = doc.getElementById("wmd-input" + postfix);
+    if (endRegex) {
+      regex = util.extendRegExp(endRegex, "", "$");
+
+      this.selection = this.selection.replace(regex, function (match) {
+        chunkObj.endTag = match + chunkObj.endTag;
+        return "";
+      });
+
+      regex = util.extendRegExp(endRegex, "^", "");
+
+      this.after = this.after.replace(regex, function (match) {
+        chunkObj.endTag = match + chunkObj.endTag;
+        return "";
+      });
+    }
+  };
+
+  // If remove is false, the whitespace is transferred
+  // to the before/after regions.
+  //
+  // If remove is true, the whitespace disappears.
+  Chunks.prototype.trimWhitespace = function (remove) {
+    var beforeReplacer, afterReplacer, that = this;
+    if (remove) {
+      beforeReplacer = afterReplacer = "";
+    } else {
+      beforeReplacer = function (s) { that.before += s; return ""; };
+      afterReplacer = function (s) { that.after = s + that.after; return ""; };
     }
 
-    function CommandManager(pluginHooks, getString, converter) {
-      this.hooks = pluginHooks;
-      this.getString = getString;
-      this.converter = converter;
-    }    // The input textarea state/contents.
+    this.selection = this.selection.replace(/^(\s*)/, beforeReplacer).replace(/(\s*)$/, afterReplacer);
+  };
 
-    // before: contains all the text in the input box BEFORE the selection.
-    // after: contains all the text in the input box AFTER the selection.
-    function Chunks() { }
+  Chunks.prototype.skipLines = function (nLinesBefore, nLinesAfter, findExtraNewlines) {
+    if (nLinesBefore === undefined) {
+      nLinesBefore = 1;
+    }
 
-    // startRegex: a regular expression to find the start tag
-    // endRegex: a regular expresssion to find the end tag
-    Chunks.prototype.findTags = function (startRegex, endRegex) {
-      var chunkObj = this;
-      var regex;
+    if (nLinesAfter === undefined) {
+      nLinesAfter = 1;
+    }
 
-      if (startRegex) {
-        regex = util.extendRegExp(startRegex, "", "$");
+    ++nLinesBefore;
+    ++nLinesAfter;
 
-        this.before = this.before.replace(regex,
-          function (match) {
-            chunkObj.startTag = chunkObj.startTag + match;
-            return "";
-          });
+    var regexText;
+    var replacementText;
 
-          regex = util.extendRegExp(startRegex, "^", "");
+    // chrome bug ... documented at:
+    // http://meta.stackexchange.com/questions/63307/blockquote-glitch-in-editor-in-chrome-6-and-7/65985#65985
+    if (navigator.userAgent.match(/Chrome/)) {
+      "X".match(/()./);
+    }
 
-          this.selection = this.selection.replace(regex,
-            function (match) {
-              chunkObj.startTag = chunkObj.startTag + match;
-              return "";
-            });
-          }
+    this.selection = this.selection.replace(/(^\n*)/, "");
 
-          if (endRegex) {
+    this.startTag = this.startTag + re.$1;
 
-            regex = util.extendRegExp(endRegex, "", "$");
+    this.selection = this.selection.replace(/(\n*$)/, "");
+    this.endTag = this.endTag + re.$1;
+    this.startTag = this.startTag.replace(/(^\n*)/, "");
+    this.before = this.before + re.$1;
+    this.endTag = this.endTag.replace(/(\n*$)/, "");
+    this.after = this.after + re.$1;
 
-            this.selection = this.selection.replace(regex,
-              function (match) {
-                chunkObj.endTag = match + chunkObj.endTag;
-                return "";
-              });
+    if (this.before) {
+      regexText = replacementText = "";
 
-              regex = util.extendRegExp(endRegex, "^", "");
+      while (nLinesBefore--) {
+        regexText += "\\n?";
+        replacementText += "\n";
+      }
 
-              this.after = this.after.replace(regex,
-                function (match) {
-                  chunkObj.endTag = match + chunkObj.endTag;
-                  return "";
-                });
-              }
-            };
+      if (findExtraNewlines) {
+        regexText = "\\n*";
+      }
+      this.before = this.before.replace(new re(regexText + "$", ""), replacementText);
+    }
 
-            // If remove is false, the whitespace is transferred
-            // to the before/after regions.
-            //
-            // If remove is true, the whitespace disappears.
-            Chunks.prototype.trimWhitespace = function (remove) {
-              var beforeReplacer, afterReplacer, that = this;
-              if (remove) {
-                beforeReplacer = afterReplacer = "";
-              } else {
-                beforeReplacer = function (s) { that.before += s; return ""; };
-                afterReplacer = function (s) { that.after = s + that.after; return ""; };
-              }
+    if (this.after) {
 
-              this.selection = this.selection.replace(/^(\s*)/, beforeReplacer).replace(/(\s*)$/, afterReplacer);
-            };
+      regexText = replacementText = "";
 
-            Chunks.prototype.skipLines = function (nLinesBefore, nLinesAfter, findExtraNewlines) {
-              if (nLinesBefore === undefined) {
-                nLinesBefore = 1;
-              }
+      while (nLinesAfter--) {
+        regexText += "\\n?";
+        replacementText += "\n";
+      }
+      if (findExtraNewlines) {
+        regexText = "\\n*";
+      }
 
-              if (nLinesAfter === undefined) {
-                nLinesAfter = 1;
-              }
+      this.after = this.after.replace(new re(regexText, ""), replacementText);
+    }
+  };
 
-              nLinesBefore++;
-              nLinesAfter++;
-
-              var regexText;
-              var replacementText;
-
-              // chrome bug ... documented at:
-              // http://meta.stackexchange.com/questions/63307/blockquote-glitch-in-editor-in-chrome-6-and-7/65985#65985
-              if (navigator.userAgent.match(/Chrome/)) {
-                "X".match(/()./);
-              }
-
-              this.selection = this.selection.replace(/(^\n*)/, "");
-
-              this.startTag = this.startTag + re.$1;
-
-              this.selection = this.selection.replace(/(\n*$)/, "");
-              this.endTag = this.endTag + re.$1;
-              this.startTag = this.startTag.replace(/(^\n*)/, "");
-              this.before = this.before + re.$1;
-              this.endTag = this.endTag.replace(/(\n*$)/, "");
-              this.after = this.after + re.$1;
-
-              if (this.before) {
-                regexText = replacementText = "";
-
-                while (nLinesBefore--) {
-                  regexText += "\\n?";
-                  replacementText += "\n";
-                }
-
-                if (findExtraNewlines) {
-                  regexText = "\\n*";
-                }
-                this.before = this.before.replace(new re(regexText + "$", ""), replacementText);
-              }
-
-              if (this.after) {
-
-                regexText = replacementText = "";
-
-                while (nLinesAfter--) {
-                  regexText += "\\n?";
-                  replacementText += "\n";
-                }
-                if (findExtraNewlines) {
-                  regexText = "\\n*";
-                }
-
-                this.after = this.after.replace(new re(regexText, ""), replacementText);
-              }
-            };
-
-            // end of Chunks
+  // end of Chunks
 
             // This is used to implement undo/redo by the undo manager.
             function TextareaState(panels, isInitialState) {
@@ -1165,16 +1160,13 @@
                       var that = this,
                       panels;
 
-                      this.run = function () {
-                        if (panels) {
-                          return; // already initialized
-                        }
-
+                      this.attach = function () {
                         panels = new PanelCollection(idPostfix);
                         var commandManager = new CommandManager(hooks, getString, markdownConverter);
-                        var previewManager = new PreviewManager(markdownConverter, panels, function () {
-                          hooks.onPreviewRefresh();
-                        });
+                        var previewManager = new PreviewManager(markdownConverter, panels,
+                          function () {
+                            hooks.onPreviewRefresh();
+                          });
                         var undoManager, uiManager;
 
                         if (!/\?noundo/.test(doc.location.href)) {
@@ -1196,7 +1188,9 @@
                           commandManager, options.helpButton, getString);
                           uiManager.setUndoRedoButtonStates();
 
-                          var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
+                          var forceRefresh = that.refreshPreview = function () {
+                            previewManager.refresh(true);
+                          };
 
                           forceRefresh();
                         };
@@ -1208,7 +1202,8 @@
 
                         if (window.getComputedStyle) {
                           // Most browsers
-                          return window.getComputedStyle(elem, null).getPropertyValue("display") !== "none";
+                          return window.getComputedStyle(elem, null).getPropertyValue(
+                            "display") !== "none";
                         }
                         else if (elem.currentStyle) {
                           // IE
@@ -1385,9 +1380,9 @@
                       //
                       // text: The html for the input box.
                       // defaultInputText: The default value that appears in the input box.
-                      // callback: The function which is executed when the prompt is dismissed, either via OK or Cancel.
-                      //      It receives a single argument; either the entered text (if OK was chosen) or null (if Cancel
-                      //      was chosen).
+                      // callback: The function which is executed when the prompt is dismissed,
+                      // either via OK or Cancel. It receives a single argument; either the
+                      // entered text (if OK was chosen) or null (if Cancel was chosen).
                       ui.prompt = function (text, defaultInputText, callback) {
                         // These variables need to be declared at this level since they are used
                         // in multiple functions.
@@ -1576,7 +1571,8 @@
 
                       // chunk: The selected region that will be enclosed with */**
                       // nStars: 1 for italics, 2 for bold
-                      // insertText: If you just click the button without highlighting text, this gets inserted
+                      // insertText: If you just click the button without highlighting text,
+                      // this gets inserted
                       commandProto.doBorI = function (chunk, postProcessing, nStars, insertText) {
 
                         // Get rid of whitespace and fixup newlines.
@@ -1637,7 +1633,6 @@
                       };
 
                       commandProto.addLinkDef = function (chunk, linkDef) {
-
                         var refNumber = 0; // The current reference number
                         var defsToAdd = {}; //
                         // Start with a clean slate by removing all previous link definitions.
@@ -1676,281 +1671,295 @@
                         // the regex is tested on the (up to) three chunks separately, and on substrings,
                         // so in order to have the correct offsets to check against okayToModify(), we
                         // have to keep track of how many characters are in the original source before
-                        // the substring that we're looking at. Note that doLinkOrImage aligns the selection
-                        // on potential brackets, so there should be no major breakage from the chunk
-                        // separation.
+                        // the substring that we're looking at. Note that doLinkOrImage aligns the
+                        // selection on potential brackets, so there should be no major breakage
+                        // from the chunk separation.
                         var skippedChars = 0;
 
-                        var uniquified = complete.replace(regex, function uniquify(wholeMatch, before, inner,
-                          afterInner, id, end, offset) {
-                            skippedChars += offset;
-                            fakedefs += " [" + skippedChars + "]: " + testlink + skippedChars + "/unicorn\n";
-                            skippedChars += before.length;
-                            inner = inner.replace(regex, uniquify);
-                            skippedChars -= before.length;
-                            var result = before + inner + afterInner + skippedChars + end;
-                            skippedChars -= offset;
-                            return result;
-                          });
+                        var uniquified = complete.replace(regex, function uniquify(
+                            wholeMatch, before, inner, afterInner, id, end, offset) {
+                          skippedChars += offset;
+                          fakedefs += " [" + skippedChars + "]: " + testlink + skippedChars +
+                            "/unicorn\n";
+                          skippedChars += before.length;
+                          inner = inner.replace(regex, uniquify);
+                          skippedChars -= before.length;
+                          var result = before + inner + afterInner + skippedChars + end;
+                          skippedChars -= offset;
+                          return result;
+                        });
 
-                          rendered = this.converter.makeHtml(uniquified + fakedefs);
+                        rendered = this.converter.makeHtml(uniquified + fakedefs);
 
-                          var okayToModify = function(offset) {
-                            return rendered.indexOf(testlink + offset + "/unicorn") !== -1;
-                          };
-
-                          var addDefNumber = function (def) {
-                            refNumber++;
-                            def = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
-                            defs += "\n" + def;
-                          };
-
-                          // note that
-                          // a) the recursive call to getLink cannot go infinite, because by definition
-                          //    of regex, inner is always a proper substring of wholeMatch, and
-                          // b) more than one level of nesting is neither supported by the regex
-                          //    nor making a lot of sense (the only use case for nesting is a linked image)
-                          var getLink = function (wholeMatch, before, inner, afterInner, id, end, offset) {
-                            if (!okayToModify(skippedChars + offset)) {
-                              return wholeMatch;
-                            }
-                            skippedChars += offset + before.length;
-                            inner = inner.replace(regex, getLink);
-                            skippedChars -= offset + before.length;
-                            if (defsToAdd[id]) {
-                              addDefNumber(defsToAdd[id]);
-                              return before + inner + afterInner + refNumber + end;
-                            }
-                            return wholeMatch;
-                          };
-
-                          var len = chunk.before.length;
-                          chunk.before = chunk.before.replace(regex, getLink);
-                          skippedChars += len;
-
-                          len = chunk.selection.length;
-                          if (linkDef) {
-                            addDefNumber(linkDef);
-                          }
-                          else {
-                            chunk.selection = chunk.selection.replace(regex, getLink);
-                          }
-                          skippedChars += len;
-
-                          var refOut = refNumber;
-
-                          chunk.after = chunk.after.replace(regex, getLink);
-
-                          if (chunk.after) {
-                            chunk.after = chunk.after.replace(/\n*$/, "");
-                          }
-                          if (!chunk.after) {
-                            chunk.selection = chunk.selection.replace(/\n*$/, "");
-                          }
-
-                          chunk.after += "\n\n" + defs;
-
-                          return refOut;
+                        var okayToModify = function(offset) {
+                          return rendered.indexOf(testlink + offset + "/unicorn") !== -1;
                         };
 
-                        // takes the line as entered into the add link/as image dialog and makes
-                        // sure the URL and the optinal title are "nice".
-                        function properlyEncoded(linkdef) {
-                          return linkdef.replace(/^\s*(.*?)(?:\s+"(.+)")?\s*$/, function (wholematch, link, title) {
+                        var addDefNumber = function (def) {
+                          refNumber++;
+                          def = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
+                          defs += "\n" + def;
+                        };
 
-                            var inQueryString = false;
+                        // note that
+                        // a) the recursive call to getLink cannot go infinite, because by
+                        // definition of regex, inner is always a proper substring of wholeMatch,
+                        // and b) more than one level of nesting is neither supported by the regex
+                        // nor making a lot of sense (the only use case for nesting is a linked
+                        // image)
+                        var getLink = function (wholeMatch, before, inner, afterInner, id,
+                            end, offset) {
+                          if (!okayToModify(skippedChars + offset)) {
+                            return wholeMatch;
+                          }
+                          skippedChars += offset + before.length;
+                          inner = inner.replace(regex, getLink);
+                          skippedChars -= offset + before.length;
+                          if (defsToAdd[id]) {
+                            addDefNumber(defsToAdd[id]);
+                            return before + inner + afterInner + refNumber + end;
+                          }
+                          return wholeMatch;
+                        };
 
-                            // Having `[^\w\d-./]` in there is just a shortcut that lets us skip
-                            // the most common characters in URLs. Replacing that it with `.` would not change
-                            // the result, because encodeURI returns those characters unchanged, but it
-                            // would mean lots of unnecessary replacement calls. Having `[` and `]` in that
-                            // section as well means we do *not* enocde square brackets. These characters are
-                            // a strange beast in URLs, but if anything, this causes URLs to be more readable,
-                            // and we leave it to the browser to make sure that these links are handled without
-                            // problems.
-                            link = link.replace(/%(?:[\da-fA-F]{2})|\?|\+|[^\w\d-./[\]]/g, function (match) {
-                              // Valid percent encoding. Could just return it as is, but we follow RFC3986
-                              // Section 2.1 which says "For consistency, URI producers and normalizers
-                              // should use uppercase hexadecimal digits for all percent-encodings."
-                              // Note that we also handle (illegal) stand-alone percent characters by
-                              // replacing them with "%25"
-                              if (match.length === 3 && match.charAt(0) === "%") {
-                                return match.toUpperCase();
-                              }
-                              switch (match) {
-                                case "?":
-                                inQueryString = true;
-                                return "?";
-                                // In the query string, a plus and a space are identical -- normalize.
-                                // Not strictly necessary, but identical behavior to the previous version
-                                // of this function.
-                                case "+":
-                                if (inQueryString) {
-                                  return "%20";
-                                }
-                                break;
-                              }
-                              return encodeURI(match);
-                            });
+                        var len = chunk.before.length;
+                        chunk.before = chunk.before.replace(regex, getLink);
+                        skippedChars += len;
 
-                            if (title) {
-                              title = title.trim ? title.trim() : title.replace(/^\s*/, "").replace(/\s*$/, "");
-                              title = title.replace(/"/g, "quot;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;")
-                              .replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                            }
-                            return title ? link + ' "' + title + '"' : link;
-                          });
+                        len = chunk.selection.length;
+                        if (linkDef) {
+                          addDefNumber(linkDef);
+                        }
+                        else {
+                          chunk.selection = chunk.selection.replace(regex, getLink);
+                        }
+                        skippedChars += len;
+
+                        var refOut = refNumber;
+
+                        chunk.after = chunk.after.replace(regex, getLink);
+
+                        if (chunk.after) {
+                          chunk.after = chunk.after.replace(/\n*$/, "");
+                        }
+                        if (!chunk.after) {
+                          chunk.selection = chunk.selection.replace(/\n*$/, "");
                         }
 
-                        commandProto.doLinkOrImage = function (chunk, postProcessing, isImage) {
-                          chunk.trimWhitespace();
-                          chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
-                          var background;
+                        chunk.after += "\n\n" + defs;
 
-                          if (chunk.endTag.length > 1 && chunk.startTag.length > 0) {
-                            chunk.startTag = chunk.startTag.replace(/!?\[/, "");
-                            chunk.endTag = "";
-                            this.addLinkDef(chunk, null);
-                          }
-                          else {
-                            // We're moving start and end tag back into the selection, since (as we're in the
-                            // else block) we're not *removing* a link, but *adding* one, so whatever findTags()
-                            // found is now back to being part of the link text. linkEnteredCallback takes care
-                            // of escaping any brackets.
-                            chunk.selection = chunk.startTag + chunk.selection + chunk.endTag;
-                            chunk.startTag = chunk.endTag = "";
+                        return refOut;
+                      };
 
-                            if (/\n\n/.test(chunk.selection)) {
-                              this.addLinkDef(chunk, null);
-                              return false;
+                      // takes the line as entered into the add link/as image dialog and makes
+                      // sure the URL and the optinal title are "nice".
+                      function properlyEncoded(linkdef) {
+                        return linkdef.replace(/^\s*(.*?)(?:\s+"(.+)")?\s*$/, function (
+                            wholematch, link, title) {
+                          var inQueryString = false;
+
+                          // Having `[^\w\d-./]` in there is just a shortcut that lets us skip
+                          // the most common characters in URLs. Replacing that it with `.`
+                          // would not change the result, because encodeURI returns those
+                          // characters unchanged, but it would mean lots of unnecessary
+                          // replacement calls. Having `[` and `]` in that section as well
+                          // means we do *not* enocde square brackets. These characters are
+                          // a strange beast in URLs, but if anything, this causes URLs to be
+                          // more readable, and we leave it to the browser to make sure that
+                          // these links are handled without problems.
+                          link = link.replace(/%(?:[\da-fA-F]{2})|\?|\+|[^\w\d-./[\]]/g, function (
+                              match) {
+                            // Valid percent encoding. Could just return it as is, but we follow RFC3986
+                            // Section 2.1 which says "For consistency, URI producers and normalizers
+                            // should use uppercase hexadecimal digits for all percent-encodings."
+                            // Note that we also handle (illegal) stand-alone percent characters by
+                            // replacing them with "%25"
+                            if (match.length === 3 && match.charAt(0) === "%") {
+                              return match.toUpperCase();
                             }
-                            var that = this;
-                            // The function to be executed when you enter a link and press OK or Cancel.
-                            // Marks up the link and adds the ref.
-                            var linkEnteredCallback = function (link) {
+                            switch (match) {
+                              case "?":
+                              inQueryString = true;
+                              return "?";
+                              // In the query string, a plus and a space are identical --
+                              // normalize.
+                              // Not strictly necessary, but identical behavior to the previous
+                              // version of this function.
+                              case "+":
+                              if (inQueryString) {
+                                return "%20";
+                              }
+                              break;
+                            }
+                            return encodeURI(match);
+                          });
 
-                              background.parentNode.removeChild(background);
+                          if (title) {
+                            title = title.trim ? title.trim() : title.replace(/^\s*/, "")
+                              .replace(/\s*$/, "");
+                            title = title.replace(/"/g, "quot;").replace(/\(/g, "&#40;")
+                              .replace(/\)/g, "&#41;")
+                              .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                          }
+                          return title ? link + ' "' + title + '"' : link;
+                        });
+                      }
 
-                              if (link !== null) {
-                                // (                          $1
-                                //     [^\\]                  anything that's not a backslash
-                                //     (?:\\\\)*              an even number (this includes zero) of backslashes
-                                // )
-                                // (?=                        followed by
-                                //     [[\]]                  an opening or closing bracket
-                                // )
-                                //
-                                // In other words, a non-escaped bracket. These have to be escaped now to make sure they
-                                // don't count as the end of the link or similar.
-                                // Note that the actual bracket has to be a lookahead, because (in case of to subsequent brackets),
-                                // the bracket in one match may be the "not a backslash" character in the next match, so it
-                                // should not be consumed by the first match.
-                                // The "prepend a space and finally remove it" steps makes sure there is a "not a backslash" at the
-                                // start of the string, so this also works if the selection begins with a bracket. We cannot solve
-                                // this by anchoring with ^, because in the case that the selection starts with two brackets, this
-                                // would mean a zero-width match at the start. Since zero-width matches advance the string position,
-                                // the first bracket could then not act as the "not a backslash" for the second.
-                                chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
+                      commandProto.doLinkOrImage = function (chunk, postProcessing, isImage) {
+                        chunk.trimWhitespace();
+                        chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
+                        var background;
 
-                                var linkDef = " [999]: " + properlyEncoded(link);
+                        if (chunk.endTag.length > 1 && chunk.startTag.length > 0) {
+                          chunk.startTag = chunk.startTag.replace(/!?\[/, "");
+                          chunk.endTag = "";
+                          this.addLinkDef(chunk, null);
+                        }
+                        else {
+                          // We're moving start and end tag back into the selection, since
+                          // (as we're in the else block) we're not *removing* a link, but
+                          // *adding* one, so whatever findTags() found is now back to being
+                          // part of the link text. linkEnteredCallback takes care of escaping
+                          // any brackets.
+                          chunk.selection = chunk.startTag + chunk.selection + chunk.endTag;
+                          chunk.startTag = chunk.endTag = "";
 
-                                var num = that.addLinkDef(chunk, linkDef);
-                                chunk.startTag = isImage ? "![" : "[";
-                                chunk.endTag = "][" + num + "]";
+                          if (/\n\n/.test(chunk.selection)) {
+                            this.addLinkDef(chunk, null);
+                            return false;
+                          }
+                          var that = this;
+                          // The function to be executed when you enter a link and press OK or
+                          // Cancel.
+                          // Marks up the link and adds the ref.
+                          var linkEnteredCallback = function (link) {
 
-                                if (!chunk.selection) {
-                                  if (isImage) {
-                                    chunk.selection = that.getString("imagedescription");
-                                  }
-                                  else {
-                                    chunk.selection = that.getString("linkdescription");
-                                  }
+                            background.parentNode.removeChild(background);
+
+                            if (link !== null) {
+                              // (                          $1
+                              //     [^\\]                  anything that's not a backslash
+                              //     (?:\\\\)*              an even number (this includes zero)
+                              // of backslashes
+                              // )
+                              // (?=                        followed by
+                              //     [[\]]                  an opening or closing bracket
+                              // )
+                              //
+                              // In other words, a non-escaped bracket. These have to be escaped now to make sure they
+                              // don't count as the end of the link or similar.
+                              // Note that the actual bracket has to be a lookahead, because (in case of to subsequent brackets),
+                              // the bracket in one match may be the "not a backslash" character in the next match, so it
+                              // should not be consumed by the first match.
+                              // The "prepend a space and finally remove it" steps makes sure there is a "not a backslash" at the
+                              // start of the string, so this also works if the selection begins with a bracket. We cannot solve
+                              // this by anchoring with ^, because in the case that the selection starts with two brackets, this
+                              // would mean a zero-width match at the start. Since zero-width matches advance the string position,
+                              // the first bracket could then not act as the "not a backslash" for the second.
+                              chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
+
+                              var linkDef = " [999]: " + properlyEncoded(link);
+
+                              var num = that.addLinkDef(chunk, linkDef);
+                              chunk.startTag = isImage ? "![" : "[";
+                              chunk.endTag = "][" + num + "]";
+
+                              if (!chunk.selection) {
+                                if (isImage) {
+                                  chunk.selection = that.getString("imagedescription");
+                                }
+                                else {
+                                  chunk.selection = that.getString("linkdescription");
                                 }
                               }
-                              postProcessing();
-                            };
-
-                            background = ui.createBackground();
-
-                            if (isImage) {
-                              if (!this.hooks.insertImageDialog(linkEnteredCallback)) {
-                                ui.prompt(this.getString("imagedialog"), imageDefaultText, linkEnteredCallback);
-                              }
                             }
-                            else {
-                              ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
-                            }
-                            return true;
-                          }
-                        };
+                            postProcessing();
+                          };
 
-                        // When making a list, hitting shift-enter will put your cursor on the next line
-                        // at the current indent level.
-                        commandProto.doAutoindent = function (chunk) {
-                          var commandMgr = this,
-                          fakeSelection = false;
+                          background = ui.createBackground();
 
-                          chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]*\n$/, "\n\n");
-                          chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}>[ \t]*\n$/, "\n\n");
-                          chunk.before = chunk.before.replace(/(\n|^)[ \t]+\n$/, "\n\n");
-
-                          // There's no selection, end the cursor wasn't at the end of the line:
-                          // The user wants to split the current list item / code line / blockquote line
-                          // (for the latter it doesn't really matter) in two. Temporarily select the
-                          // (rest of the) line to achieve this.
-                          if (!chunk.selection && !/^[ \t]*(?:\n|$)/.test(chunk.after)) {
-                            chunk.after = chunk.after.replace(/^[^\n]*/, function (wholeMatch) {
-                              chunk.selection = wholeMatch;
-                              return "";
-                            });
-                            fakeSelection = true;
-                          }
-
-                          if (/(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]+.*\n$/.test(chunk.before)) {
-                            if (commandMgr.doList) {
-                              commandMgr.doList(chunk);
+                          if (isImage) {
+                            if (!this.hooks.insertImageDialog(linkEnteredCallback)) {
+                              ui.prompt(this.getString("imagedialog"), imageDefaultText,
+                                  linkEnteredCallback);
                             }
                           }
-                          if (/(\n|^)[ ]{0,3}>[ \t]+.*\n$/.test(chunk.before)) {
-                            if (commandMgr.doBlockquote) {
-                              commandMgr.doBlockquote(chunk);
-                            }
+                          else {
+                            ui.prompt(this.getString("linkdialog"), linkDefaultText,
+                              linkEnteredCallback);
                           }
-                          if (/(\n|^)(\t|[ ]{4,}).*\n$/.test(chunk.before)) {
-                            if (commandMgr.doCode) {
-                              commandMgr.doCode(chunk);
-                            }
-                          }
+                          return true;
+                        }
+                      };
 
-                          if (fakeSelection) {
-                            chunk.after = chunk.selection + chunk.after;
-                            chunk.selection = "";
-                          }
-                        };
+                      // When making a list, hitting shift-enter will put your cursor on the
+                      // next line at the current indent level.
+                      commandProto.doAutoindent = function (chunk) {
+                        var commandMgr = this,
+                        fakeSelection = false;
 
-                        commandProto.doBlockquote = function (chunk) {
+                        chunk.before = chunk.before.replace(
+                            /(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]*\n$/, "\n\n");
+                        chunk.before = chunk.before.replace(
+                            /(\n|^)[ ]{0,3}>[ \t]*\n$/, "\n\n");
+                        chunk.before = chunk.before.replace(/(\n|^)[ \t]+\n$/, "\n\n");
 
-                          chunk.selection = chunk.selection.replace(/^(\n*)([^\r]+?)(\n*)$/,
-                          function (totalMatch, newlinesBefore, text, newlinesAfter) {
-                            chunk.before += newlinesBefore;
-                            chunk.after = newlinesAfter + chunk.after;
-                            return text;
-                          });
-
-                          chunk.before = chunk.before.replace(/(>[ \t]*)$/,
-                          function (totalMatch, blankLine) {
-                            chunk.selection = blankLine + chunk.selection;
+                        // There's no selection, end the cursor wasn't at the end of the line:
+                        // The user wants to split the current list item / code line / blockquote
+                        // line (for the latter it doesn't really matter) in two. Temporarily
+                        // select the (rest of the) line to achieve this.
+                        if (!chunk.selection && !/^[ \t]*(?:\n|$)/.test(chunk.after)) {
+                          chunk.after = chunk.after.replace(/^[^\n]*/, function (wholeMatch) {
+                            chunk.selection = wholeMatch;
                             return "";
                           });
+                          fakeSelection = true;
+                        }
 
-                          chunk.selection = chunk.selection.replace(/^(\s|>)+$/, "");
-                          chunk.selection = chunk.selection || this.getString("quoteexample");
+                        if (/(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]+.*\n$/.test(chunk.before)) {
+                          if (commandMgr.doList) {
+                            commandMgr.doList(chunk);
+                          }
+                        }
+                        if (/(\n|^)[ ]{0,3}>[ \t]+.*\n$/.test(chunk.before)) {
+                          if (commandMgr.doBlockquote) {
+                            commandMgr.doBlockquote(chunk);
+                          }
+                        }
+                        if (/(\n|^)(\t|[ ]{4,}).*\n$/.test(chunk.before)) {
+                          if (commandMgr.doCode) {
+                            commandMgr.doCode(chunk);
+                          }
+                        }
 
-                          // The original code uses a regular expression to find out how much of the
-                          // text *directly before* the selection already was a blockquote:
+                        if (fakeSelection) {
+                          chunk.after = chunk.selection + chunk.after;
+                          chunk.selection = "";
+                        }
+                      };
 
-                          /*
-                          if (chunk.before) {
+                      commandProto.doBlockquote = function (chunk) {
+                        chunk.selection = chunk.selection.replace(/^(\n*)([^\r]+?)(\n*)$/,
+                        function (totalMatch, newlinesBefore, text, newlinesAfter) {
+                          chunk.before += newlinesBefore;
+                          chunk.after = newlinesAfter + chunk.after;
+                          return text;
+                        });
+
+                        chunk.before = chunk.before.replace(/(>[ \t]*)$/,
+                        function (totalMatch, blankLine) {
+                          chunk.selection = blankLine + chunk.selection;
+                          return "";
+                        });
+
+                        chunk.selection = chunk.selection.replace(/^(\s|>)+$/, "");
+                        chunk.selection = chunk.selection || this.getString("quoteexample");
+
+                        // The original code uses a regular expression to find out how much of the
+                        // text *directly before* the selection already was a blockquote:
+
+                        /*
+                        if (chunk.before) {
                           chunk.before = chunk.before.replace(/\n?$/, "\n");
                         }
                         chunk.before = chunk.before.replace(/(((\n|^)(\n[ \t]*)*>(.+\n)*.*)+(\n[ \t]*)*$)/,
@@ -2078,7 +2087,6 @@
                   };
 
                   commandProto.doCode = function (chunk) {
-
                     var hasTextBefore = /\S[ ]*$/.test(chunk.before);
                     var hasTextAfter = /^[ ]*\S/.test(chunk.after);
 
@@ -2146,7 +2154,6 @@
                     };
 
                     commandProto.doList = function (chunk, postProcessing, isNumberedList) {
-
                       // These are identical except at the very beginning and end.
                       // Should probably use the regex extension function to make this clearer.
                       var previousItemsRegex = /(\n|^)(([ ]{0,3}([*+-]|\d+[.])[ \t]+.*)(\n.+|\n{2,}([*+-].*|\d+[.])[ \t]+.*|\n{2,}[ \t]+\S.*)*)\n*$/;
@@ -2233,80 +2240,81 @@
 
                         var nLinesDown = 1;
 
-                        chunk.after = chunk.after.replace(nextItemsRegex,
-                          function (itemText) {
-                            nLinesDown = /[^\n]\n\n[^\n]/.test(itemText) ? 1 : 0;
-                            return getPrefixedItem(itemText);
-                          });
+                        chunk.after = chunk.after.replace(nextItemsRegex, function (itemText) {
+                          nLinesDown = /[^\n]\n\n[^\n]/.test(itemText) ? 1 : 0;
+                          return getPrefixedItem(itemText);
+                        });
 
-                          chunk.trimWhitespace(true);
-                          chunk.skipLines(nLinesUp, nLinesDown, true);
-                          chunk.startTag = prefix;
-                          var spaces = prefix.replace(/./g, " ");
-                          this.wrap(chunk, SETTINGS.lineLength - spaces.length);
-                          chunk.selection = chunk.selection.replace(/\n/g, "\n" + spaces);
-                        };
+                        chunk.trimWhitespace(true);
+                        chunk.skipLines(nLinesUp, nLinesDown, true);
+                        chunk.startTag = prefix;
+                        var spaces = prefix.replace(/./g, " ");
+                        this.wrap(chunk, SETTINGS.lineLength - spaces.length);
+                        chunk.selection = chunk.selection.replace(/\n/g, "\n" + spaces);
+                      };
 
-                        commandProto.doHeading = function (chunk) {
-                          // Remove leading/trailing whitespace and reduce internal spaces to single spaces.
-                          chunk.selection = chunk.selection.replace(/\s+/g, " ");
-                          chunk.selection = chunk.selection.replace(/(^\s+|\s+$)/g, "");
+                      commandProto.doHeading = function (chunk) {
+                        // Remove leading/trailing whitespace and reduce internal spaces to
+                        //   single spaces.
+                        chunk.selection = chunk.selection.replace(/\s+/g, " ");
+                        chunk.selection = chunk.selection.replace(/(^\s+|\s+$)/g, "");
 
-                          // If we clicked the button with no selected text, we just
-                          // make a level 2 hash header around some default text.
-                          if (!chunk.selection) {
-                            chunk.startTag = "## ";
-                            chunk.selection = this.getString("headingexample");
-                            chunk.endTag = " ##";
-                            return;
+                        // If we clicked the button with no selected text, we just
+                        // make a level 2 hash header around some default text.
+                        if (!chunk.selection) {
+                          chunk.startTag = "## ";
+                          chunk.selection = this.getString("headingexample");
+                          chunk.endTag = " ##";
+                          return;
+                        }
+
+                        var headerLevel = 0;     // The existing header level of the selected text.
+
+                        // Remove any existing hash heading markdown and save the header level.
+                        chunk.findTags(/#+[ ]*/, /[ ]*#+/);
+                        if (/#+/.test(chunk.startTag)) {
+                          headerLevel = re.lastMatch.length;
+                        }
+                        chunk.startTag = chunk.endTag = "";
+
+                        // Try to get the current header level by looking for - and = in the line
+                        // below the selection.
+                        chunk.findTags(null, /\s?(-+|=+)/);
+                        if (/=+/.test(chunk.endTag)) {
+                          headerLevel = 1;
+                        }
+                        if (/-+/.test(chunk.endTag)) {
+                          headerLevel = 2;
+                        }
+
+                        // Skip to the next line so we can create the header markdown.
+                        chunk.startTag = chunk.endTag = "";
+                        chunk.skipLines(1, 1);
+
+                        // We make a level 2 header if there is no current header.
+                        // If there is a header level, we substract one from the header level.
+                        // If it's already a level 1 header, it's removed.
+                        var headerLevelToCreate = headerLevel === 0 ? 2 : headerLevel - 1;
+
+                        if (headerLevelToCreate > 0) {
+                          // The button only creates level 1 and 2 underline headers.
+                          // Why not have it iterate over hash header levels?  Wouldn't that be
+                          // easier and cleaner?
+                          var headerChar = headerLevelToCreate >= 2 ? "-" : "=";
+                          var len = chunk.selection.length;
+                          if (len > SETTINGS.lineLength) {
+                            len = SETTINGS.lineLength;
                           }
-
-                          var headerLevel = 0;     // The existing header level of the selected text.
-
-                          // Remove any existing hash heading markdown and save the header level.
-                          chunk.findTags(/#+[ ]*/, /[ ]*#+/);
-                          if (/#+/.test(chunk.startTag)) {
-                            headerLevel = re.lastMatch.length;
+                          chunk.endTag = "\n";
+                          while (len--) {
+                            chunk.endTag += headerChar;
                           }
-                          chunk.startTag = chunk.endTag = "";
+                        }
+                      };
 
-                          // Try to get the current header level by looking for - and = in the line
-                          // below the selection.
-                          chunk.findTags(null, /\s?(-+|=+)/);
-                          if (/=+/.test(chunk.endTag)) {
-                            headerLevel = 1;
-                          }
-                          if (/-+/.test(chunk.endTag)) {
-                            headerLevel = 2;
-                          }
-
-                          // Skip to the next line so we can create the header markdown.
-                          chunk.startTag = chunk.endTag = "";
-                          chunk.skipLines(1, 1);
-
-                          // We make a level 2 header if there is no current header.
-                          // If there is a header level, we substract one from the header level.
-                          // If it's already a level 1 header, it's removed.
-                          var headerLevelToCreate = headerLevel === 0 ? 2 : headerLevel - 1;
-
-                          if (headerLevelToCreate > 0) {
-                            // The button only creates level 1 and 2 underline headers.
-                            // Why not have it iterate over hash header levels?  Wouldn't that be easier and cleaner?
-                            var headerChar = headerLevelToCreate >= 2 ? "-" : "=";
-                            var len = chunk.selection.length;
-                            if (len > SETTINGS.lineLength) {
-                              len = SETTINGS.lineLength;
-                            }
-                            chunk.endTag = "\n";
-                            while (len--) {
-                              chunk.endTag += headerChar;
-                            }
-                          }
-                        };
-
-                        commandProto.doHorizontalRule = function (chunk) {
-                          chunk.startTag = "----------\n";
-                          chunk.selection = "";
-                          chunk.skipLines(2, 1, true);
-                        };
-                      })();
+                      commandProto.doHorizontalRule = function (chunk) {
+                        chunk.startTag = "----------\n";
+                        chunk.selection = "";
+                        chunk.skipLines(2, 1, true);
+                      };
+                    })();
