@@ -1,22 +1,13 @@
+'use strict';
 (function () {
     var output, Converter;
-    if (typeof exports === "object" && typeof require === "function") { // we're in a CommonJS (e.g. Node.js) module
+    if (typeof exports === "object" && typeof require === "function") {
+         // we're in a CommonJS (e.g. Node.js) module
         output = exports;
         Converter = require("./Markdown.Converter").Converter;
     } else {
         output = window.Markdown;
         Converter = output.Converter;
-    }
-        
-    output.getSanitizingConverter = function () {
-        var converter = new Converter();
-        converter.hooks.chain("postConversion", sanitizeHtml);
-        converter.hooks.chain("postConversion", balanceTags);
-        return converter;
-    }
-
-    function sanitizeHtml(html) {
-        return html.replace(/<[^>]*>?/gi, sanitizeTag);
     }
 
     // (tags that can be opened/closed) | (tags that stand alone)
@@ -28,24 +19,29 @@
     var img_white = /^(<img\ssrc="(https?:\/\/|\/)[-A-Za-z0-9+&@#\/%?=~_|!:,.;\(\)*[\]$]+"(\swidth="\d{1,3}")?(\sheight="\d{1,3}")?(\salt="[^"<>]*")?(\stitle="[^"<>]*")?\s?\/?>)$/i;
 
     function sanitizeTag(tag) {
-        if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white))
+        if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white)) {
             return tag;
-        else
-            return "";
+        } else {
+            return '';
+        }
+    }
+
+    function sanitizeHtml(html) {
+        return html.replace(/<[^>]*>?/gi, sanitizeTag);
     }
 
     /// <summary>
     /// attempt to balance HTML tags in the html string
     /// by removing any unmatched opening or closing tags
-    /// IMPORTANT: we *assume* HTML has *already* been 
+    /// IMPORTANT: we *assume* HTML has *already* been
     /// sanitized and is safe/sane before balancing!
-    /// 
+    ///
     /// adapted from CODESNIPPET: A8591DBA-D1D3-11DE-947C-BA5556D89593
     /// </summary>
     function balanceTags(html) {
-
-        if (html == "")
-            return "";
+        if (html === '') {
+            return '';
+        }
 
         var re = /<\/?\w+[^>]*(\s|$|>)/g;
         // convert everything to lower case; this makes
@@ -54,8 +50,9 @@
 
         // no HTML tags present? nothing to do; exit now
         var tagcount = (tags || []).length;
-        if (tagcount == 0)
+        if (tagcount === 0) {
             return html;
+        }
 
         var tagname, tag;
         var ignoredtags = "<p><img><br><li><hr>";
@@ -69,8 +66,9 @@
             tagname = tags[ctag].replace(/<\/?(\w+).*/, "$1");
             // skip any already paired tags
             // and skip tags in our ignore list; assume they're self-closed
-            if (tagpaired[ctag] || ignoredtags.search("<" + tagname + ">") > -1)
+            if (tagpaired[ctag] || ignoredtags.search("<" + tagname + ">") > -1) {
                 continue;
+            }
 
             tag = tags[ctag];
             match = -1;
@@ -79,30 +77,38 @@
                 // this is an opening tag
                 // search forwards (next tags), look for closing tags
                 for (var ntag = ctag + 1; ntag < tagcount; ntag++) {
-                    if (!tagpaired[ntag] && tags[ntag] == "</" + tagname + ">") {
+                    if (!tagpaired[ntag] && tags[ntag] === "</" + tagname + ">") {
                         match = ntag;
                         break;
                     }
                 }
             }
 
-            if (match == -1)
+            if (match === -1) {
                 needsRemoval = tagremove[ctag] = true; // mark for removal
-            else
+            } else {
                 tagpaired[match] = true; // mark paired
+            }
         }
 
-        if (!needsRemoval)
+        if (!needsRemoval) {
             return html;
+        }
 
         // delete all orphaned tags from the string
-
-        var ctag = 0;
-        html = html.replace(re, function (match) {
-            var res = tagremove[ctag] ? "" : match;
-            ctag++;
+        var ctag1 = 0;
+        html = html.replace(re, function (m) {
+            var res = tagremove[ctag1] ? '' : m;
+            ++ctag1;
             return res;
         });
         return html;
     }
+
+    output.getSanitizingConverter = function () {
+        var converter = new Converter();
+        converter.hooks.chain("postConversion", sanitizeHtml);
+        converter.hooks.chain("postConversion", balanceTags);
+        return converter;
+    };
 })();

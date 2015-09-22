@@ -1,10 +1,13 @@
-"use strict";
+'use strict';
 var Markdown;
 
-if (typeof exports === "object" && typeof require === "function") // we're in a CommonJS (e.g. Node.js) module
+if (typeof exports === "object" && typeof require === "function") {
+     // we're in a CommonJS (e.g. Node.js) module
     Markdown = exports;
-else
+}
+else {
     Markdown = {};
+}
 
 // The following text is included for historical reasons, but should
 // be taken with a pinch of salt; it's not all true anymore.
@@ -36,7 +39,6 @@ else
 // and line endings.
 //
 
-
 //
 // Usage:
 //
@@ -52,31 +54,32 @@ else
 //
 
 (function () {
-
     function identity(x) { return x; }
-    function returnFalse(x) { return false; }
+    function returnFalse() { return false; }
 
     function HookCollection() { }
 
     HookCollection.prototype = {
-
         chain: function (hookname, func) {
             var original = this[hookname];
-            if (!original)
+            if (!original) {
                 throw new Error("unknown hook " + hookname);
+            }
 
-            if (original === identity)
+            if (original === identity) {
                 this[hookname] = func;
-            else
-                this[hookname] = function (text) {
+            } else {
+                this[hookname] = function () {
                     var args = Array.prototype.slice.call(arguments, 0);
                     args[0] = original.apply(null, args);
                     return func.apply(null, args);
                 };
+            }
         },
         set: function (hookname, func) {
-            if (!this[hookname])
+            if (!this[hookname]) {
                 throw new Error("unknown hook " + hookname);
+            }
             this[hookname] = func;
         },
         addNoop: function (hookname) {
@@ -84,7 +87,7 @@ else
         },
         addFalse: function (hookname) {
             this[hookname] = returnFalse;
-        }
+        },
     };
 
     Markdown.HookCollection = HookCollection;
@@ -103,7 +106,7 @@ else
         },
         get: function (key) {
             return this["s_" + key];
-        }
+        },
     };
 
     Markdown.Converter = function (OPTIONS) {
@@ -199,15 +202,17 @@ else
                         var v;
                         while (c > 0) {
                             v = (c % 51) + cp_A;
-                            if (v >= cp_Q)
+                            if (v >= cp_Q) {
                                 v++;
-                            if (v > cp_Z)
+                            }
+                            if (v > cp_Z) {
                                 v += dist_Za;
+                            }
                             s = String.fromCharCode(v) + s;
                             c = c / 51 | 0;
                         }
                         return "Q" + s + "Q";
-                    })
+                    });
                 };
 
                 deasciify = function(text) {
@@ -216,20 +221,23 @@ else
                         var v;
                         for (var i = 0; i < s.length; i++) {
                             v = s.charCodeAt(i);
-                            if (v > cp_Z)
+                            if (v > cp_Z) {
                                 v -= dist_Za;
-                            if (v > cp_Q)
+                            }
+                            if (v > cp_Q) {
                                 v--;
+                            }
                             v -= cp_A;
                             c = (c * 51) + v;
                         }
                         return String.fromCharCode(c);
-                    })
-                }
+                    });
+                };
             })();
         }
 
-        var _DoItalicsAndBold = OPTIONS.asteriskIntraWordEmphasis ? _DoItalicsAndBold_AllowIntrawordWithAsterisk : _DoItalicsAndBoldStrict;
+        var _DoItalicsAndBold = OPTIONS.asteriskIntraWordEmphasis ?
+            _DoItalicsAndBold_AllowIntrawordWithAsterisk : _DoItalicsAndBoldStrict;
 
         this.makeHtml = function (text) {
 
@@ -242,8 +250,9 @@ else
 
             // This will only happen if makeHtml on the same converter instance is called from a plugin hook.
             // Don't do that.
-            if (g_urls)
+            if (g_urls) {
                 throw new Error("Recursive call to converter.makeHtml");
+            }
 
             // Create the private state objects.
             g_urls = new SaveHash();
@@ -290,7 +299,7 @@ else
 
             text = _RunBlockGamut(text);
 
-            text = _UnescapeSpecialChars(text);
+            text = unescapeSpecialChars(text);
 
             // attacklab: Restore dollar signs
             text = text.replace(/~D/g, "$$");
@@ -1447,8 +1456,8 @@ else
             // ...but we're sidestepping its use of the (slow) RegExp constructor
             // as an optimization for Firefox.  This function gets called a LOT.
 
-            text = text.replace(/\\(\\)/g, escapeCharacters_callback);
-            text = text.replace(/\\([`*_{}\[\]()>#+-.!])/g, escapeCharacters_callback);
+            text = text.replace(/\\(\\)/g, escapeCharactersCallback);
+            text = text.replace(/\\([`*_{}\[\]()>#+-.!])/g, escapeCharactersCallback);
             return text;
         }
 
@@ -1531,14 +1540,14 @@ else
             /* disabling email autolinking, since we don't do that on the server, either
             text = text.replace(/<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi,
                 function(wholeMatch,m1) {
-                    return _EncodeEmailAddress( _UnescapeSpecialChars(m1) );
+                    return _EncodeEmailAddress( unescapeSpecialChars(m1) );
                 }
             );
             */
             return text;
         }
 
-        function _UnescapeSpecialChars(text) {
+        function unescapeSpecialChars(text) {
             //
             // Swap back in all the special characters we've hidden.
             //
@@ -1571,7 +1580,7 @@ else
             if (!/\t/.test(text))
                 return text;
 
-            var spaces = ["    ", "   ", "  ", " "],
+            var spaces = ["    ", "   ", "  ", " ", ],
             skew = 0,
             v;
 
@@ -1592,7 +1601,7 @@ else
 
         function attributeSafeUrl(url) {
             url = attributeEncode(url);
-            url = escapeCharacters(url, "*_:()[]")
+            url = escapeCharacters(url, "*_:()[]");
             return url;
         }
 
@@ -1606,13 +1615,12 @@ else
             }
 
             var regex = new RegExp(regexString, "g");
-            text = text.replace(regex, escapeCharacters_callback);
+            text = text.replace(regex, escapeCharactersCallback);
 
             return text;
         }
 
-
-        function escapeCharacters_callback(wholeMatch, m1) {
+        function escapeCharactersCallback(wholeMatch, m1) {
             var charCodeToEscape = m1.charCodeAt(0);
             return "~E" + charCodeToEscape + "E";
         }
