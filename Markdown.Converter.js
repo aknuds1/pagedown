@@ -366,15 +366,12 @@ else {
         }
 
         function _HashHTMLBlocks(text) {
-
             // Hashify HTML blocks:
             // We only want to do this for block-level HTML tags, such as headers,
             // lists, and tables. That's because we still want to wrap <p>s around
             // "paragraphs" that are wrapped in non-block-level tags, such as anchors,
             // phrase emphasis, and spans. The list of tags we're looking for is
             // hard-coded:
-            var block_tags_a = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del"
-            var block_tags_b = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math"
 
             // First, look for nested blocks, e.g.:
             //   <div>
@@ -496,7 +493,7 @@ else {
             return hashBlock(m1);
         }
 
-        var blockGamutHookCallback = function (t) { return _RunBlockGamut(t); }
+        var blockGamutHookCallback = function (t) { return _RunBlockGamut(t); };
 
         function _RunBlockGamut(text, doNotUnhash, doNotCreateParagraphs) {
             //
@@ -581,7 +578,8 @@ else {
 
             text = text.replace(regex, function (wholeMatch) {
                 var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, "$1`");
-                tag = escapeCharacters(tag, wholeMatch.charAt(1) == "!" ? "\\`*_/" : "\\`*_"); // also escape slashes in comments to prevent autolinking there -- http://meta.stackexchange.com/questions/95987
+                 // also escape slashes in comments to prevent autolinking there -- http://meta.stackexchange.com/questions/95987
+                tag = escapeCharacters(tag, wholeMatch.charAt(1) === "!" ? "\\`*_/" : "\\`*_");
                 return tag;
             });
 
@@ -589,9 +587,9 @@ else {
         }
 
         function _DoAnchors(text) {
-
-            if (text.indexOf("[") === -1)
+            if (text.indexOf("[") === -1) {
                 return text;
+            }
 
             //
             // Turn Markdown link shortcuts into XHTML <a> tags.
@@ -687,23 +685,25 @@ else {
         }
 
         function writeAnchorTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
-            if (m7 == undefined) m7 = "";
+            if (m7 == null) {
+                m7 = "";
+            }
             var whole_match = m1;
             var link_text = m2.replace(/:\/\//g, "~P"); // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
             var link_id = m3.toLowerCase();
             var url = m4;
             var title = m7;
 
-            if (url == "") {
-                if (link_id == "") {
+            if (url === "") {
+                if (link_id === "") {
                     // lower-case and turn embedded newlines into spaces
                     link_id = link_text.toLowerCase().replace(/ ?\n/g, " ");
                 }
                 url = "#" + link_id;
 
-                if (g_urls.get(link_id) != undefined) {
+                if (g_urls.get(link_id) != null) {
                     url = g_urls.get(link_id);
-                    if (g_titles.get(link_id) != undefined) {
+                    if (g_titles.get(link_id) != null) {
                         title = g_titles.get(link_id);
                     }
                 }
@@ -720,7 +720,7 @@ else {
 
             var result = "<a href=\"" + url + "\"";
 
-            if (title != "") {
+            if (title !== "") {
                 title = attributeEncode(title);
                 title = escapeCharacters(title, "*_");
                 result += " title=\"" + title + "\"";
@@ -732,9 +732,9 @@ else {
         }
 
         function _DoImages(text) {
-
-            if (text.indexOf("![") === -1)
+            if (text.indexOf("![") === -1) {
                 return text;
+            }
 
             //
             // Turn Markdown image shortcuts into <img> tags.
@@ -807,18 +807,20 @@ else {
             var url = m4;
             var title = m7;
 
-            if (!title) title = "";
+            if (!title) {
+                title = "";
+            }
 
-            if (url == "") {
-                if (link_id == "") {
+            if (url === "") {
+                if (link_id === "") {
                     // lower-case and turn embedded newlines into spaces
                     link_id = alt_text.toLowerCase().replace(/ ?\n/g, " ");
                 }
                 url = "#" + link_id;
 
-                if (g_urls.get(link_id) != undefined) {
+                if (g_urls.get(link_id) != null) {
                     url = g_urls.get(link_id);
-                    if (g_titles.get(link_id) != undefined) {
+                    if (g_titles.get(link_id) != null) {
                         title = g_titles.get(link_id);
                     }
                 }
@@ -930,8 +932,9 @@ else {
                     var list = m1;
                     var list_type = (m2.search(/[*+-]/g) > -1) ? "ul" : "ol";
                     var first_number;
-                    if (list_type === "ol")
-                        first_number = parseInt(m2, 10)
+                    if (list_type === "ol") {
+                        first_number = parseInt(m2, 10);
+                    }
 
                     var result = _ProcessListItems(list, list_type, isInsideParagraphlessListItem);
 
@@ -941,8 +944,9 @@ else {
                     // hack that is the HTML block parser.
                     result = result.replace(/\s+$/, "");
                     var opening = "<" + list_type;
-                    if (first_number && first_number !== 1)
+                    if (first_number && first_number !== 1) {
                         opening += " start=\"" + first_number + "\"";
+                    }
                     result = opening + ">" + result + "</" + list_type + ">\n";
                     return result;
                 });
@@ -955,8 +959,9 @@ else {
                     var list_type = (m3.search(/[*+-]/g) > -1) ? "ul" : "ol";
 
                     var first_number;
-                    if (list_type === "ol")
-                        first_number = parseInt(m3, 10)
+                    if (list_type === "ol") {
+                        first_number = parseInt(m3, 10);
+                    }
 
                     var result = _ProcessListItems(list, list_type);
                     var opening = "<" + list_type;
@@ -974,9 +979,9 @@ else {
             return text;
         }
 
-        var _listItemMarkers = { ol: "\\d+[.]", ul: "[*+-]" };
+        var _listItemMarkers = { ol: "\\d+[.]", ul: "[*+-]", };
 
-        function _ProcessListItems(list_str, list_type, isInsideParagraphlessListItem) {
+        function _ProcessListItems(list_str, list_type) {
             //
             //  Process the contents of a single ordered or unordered list, splitting it
             //  into individual list items.
@@ -1043,12 +1048,12 @@ else {
             list_str = list_str.replace(re,
                 function (wholeMatch, m1, m2, m3) {
                     var item = m3;
-                    var leading_space = m1;
                     var ends_with_double_newline = /\n\n$/.test(item);
                     var contains_double_newline = ends_with_double_newline || item.search(/\n{2,}/) > -1;
 
                     var loose = contains_double_newline || last_item_had_a_double_newline;
-                    item = _RunBlockGamut(_Outdent(item), /* doNotUnhash = */true, /* doNotCreateParagraphs = */ !loose);
+                    item = _RunBlockGamut(_Outdent(item), /* doNotUnhash = */true,
+                        /* doNotCreateParagraphs = */ !loose);
 
                     last_item_had_a_double_newline = ends_with_double_newline;
                     return "<li>" + item + "</li>\n";
@@ -1230,8 +1235,9 @@ else {
 
         function _DoItalicsAndBold_AllowIntrawordWithAsterisk(text) {
 
-            if (text.indexOf("*") === -1 && text.indexOf("_") === - 1)
+            if (text.indexOf("*") === -1 && text.indexOf("_") === - 1) {
                 return text;
+            }
 
             text = asciify(text);
 
@@ -1402,8 +1408,9 @@ else {
                 else if (/\S/.test(str)) {
                     str = _RunSpanGamut(str);
                     str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? "" : "<p>");
-                    if (!doNotCreateParagraphs)
-                        str += "</p>"
+                    if (!doNotCreateParagraphs) {
+                        str += "</p>";
+                    }
                     grafsOut.push(str);
                 }
 
@@ -1467,21 +1474,24 @@ else {
             endCharRegex = new RegExp(charEndingUrl, "i");
 
         function handleTrailingParens(wholeMatch, lookbehind, protocol, link) {
-            if (lookbehind)
+            if (lookbehind) {
                 return wholeMatch;
-            if (link.charAt(link.length - 1) !== ")")
+            }
+            if (link.charAt(link.length - 1) !== ")") {
                 return "<" + protocol + link + ">";
+            }
             var parens = link.match(/[()]/g);
             var level = 0;
             for (var i = 0; i < parens.length; i++) {
                 if (parens[i] === "(") {
-                    if (level <= 0)
+                    if (level <= 0) {
                         level = 1;
-                    else
-                        level++;
+                    } else {
+                        ++level;
+                    }
                 }
                 else {
-                    level--;
+                    --level;
                 }
             }
             var tail = "";
@@ -1503,7 +1513,6 @@ else {
         }
 
         function _DoAutoLinks(text) {
-
             // note that at this point, all other URL in the text are already hyperlinked as <a href=""></a>
             // *except* for the <http://www.foo.com> case
 
@@ -1571,14 +1580,15 @@ else {
             text = text.replace(/^(\t|[ ]{1,4})/gm, "~0"); // attacklab: g_tab_width
 
             // attacklab: clean up hack
-            text = text.replace(/~0/g, "")
+            text = text.replace(/~0/g, '');
 
             return text;
         }
 
         function _Detab(text) {
-            if (!/\t/.test(text))
+            if (!/\t/.test(text)) {
                 return text;
+            }
 
             var spaces = ["    ", "   ", "  ", " ", ],
             skew = 0,
