@@ -13,7 +13,8 @@
     // Used to work around some browser bugs where we can't use feature testing.
         uaSniffed = {
             isIE: /msie/.test(nav.userAgent.toLowerCase()),
-            isIE_5or6: /msie 6/.test(nav.userAgent.toLowerCase()) || /msie 5/.test(nav.userAgent.toLowerCase()),
+            isIE_5or6: /msie 6/.test(nav.userAgent.toLowerCase()) ||
+                /msie 5/.test(nav.userAgent.toLowerCase()),
             isOpera: /opera/.test(nav.userAgent.toLowerCase()),
         };
 
@@ -36,7 +37,9 @@
 
         image: "Image <img> Ctrl+G",
         imagedescription: "enter image description here",
-        imagedialog: "<p><b>Insert Image</b></p><p>http://example.com/images/diagram.jpg \"optional title\"<br><br>Need <a href='http://www.google.com/search?q=free+image+hosting' target='_blank'>free image hosting?</a></p>",
+        imagedialog: "<p><b>Insert Image</b></p><p>http://example.com/images/diagram.jpg " +
+            "\"optional title\"<br><br>Need <a href='http://www.google.com/search?q=free+" +
+            "image+hosting' target='_blank'>free image hosting?</a></p>",
 
         olist: "Numbered List <ol> Ctrl+O",
         ulist: "Bulleted List <ul> Ctrl+U",
@@ -367,7 +370,8 @@
         var regexText;
         var replacementText;
 
-        // chrome bug ... documented at: http://meta.stackexchange.com/questions/63307/blockquote-glitch-in-editor-in-chrome-6-and-7/65985#65985
+        // chrome bug ... documented at:
+        // http://meta.stackexchange.com/questions/63307/blockquote-glitch-in-editor-in-chrome-6-and-7/65985#65985
         if (navigator.userAgent.match(/Chrome/)) {
             "X".match(/()./);
         }
@@ -527,7 +531,8 @@
             var chunk = new Chunks();
             chunk.before = util.fixEolChars(stateObj.text.substring(0, stateObj.start));
             chunk.startTag = "";
-            chunk.selection = util.fixEolChars(stateObj.text.substring(stateObj.start, stateObj.end));
+            chunk.selection = util.fixEolChars(stateObj.text.substring(stateObj.start,
+                stateObj.end));
             chunk.endTag = "";
             chunk.after = util.fixEolChars(stateObj.text.substring(stateObj.end));
             chunk.scrollTop = stateObj.scrollTop;
@@ -643,7 +648,8 @@
                 // on mousedown.
                 if (uaSniffed.isIE) {
                     button.onmousedown = function () {
-                        if (doc.activeElement && doc.activeElement !== panels.input) { // we're not even in the input box, so there's no selection
+                        if (doc.activeElement && doc.activeElement !== panels.input) {
+                            // we're not even in the input box, so there's no selection
                             return;
                         }
                         panels.ieCachedRange = document.selection.createRange();
@@ -706,28 +712,37 @@
                 xPosition += 25;
             };
 
-            buttons.bold = makeButton("wmd-bold-button", getString("bold"), "0px", bindCommand("doBold"));
-            buttons.italic = makeButton("wmd-italic-button", getString("italic"), "-20px", bindCommand("doItalic"));
+            buttons.bold = makeButton("wmd-bold-button", getString("bold"), "0px",
+                bindCommand("doBold"));
+            buttons.italic = makeButton("wmd-italic-button", getString("italic"), "-20px",
+                bindCommand("doItalic"));
             makeSpacer(1);
-            buttons.link = makeButton("wmd-link-button", getString("link"), "-40px", bindCommand(function (chunk, postProcessing) {
-                return this.doLinkOrImage(chunk, postProcessing, false);
-            }));
-            buttons.quote = makeButton("wmd-quote-button", getString("quote"), "-60px", bindCommand("doBlockquote"));
-            buttons.code = makeButton("wmd-code-button", getString("code"), "-80px", bindCommand("doCode"));
+            buttons.link = makeButton("wmd-link-button", getString("link"), "-40px",
+                bindCommand(function (chunk, postProcessing) {
+                    return this.doLinkOrImage(chunk, postProcessing, false);
+                }));
+            buttons.quote = makeButton("wmd-quote-button", getString("quote"), "-60px",
+                bindCommand("doBlockquote"));
+            buttons.code = makeButton("wmd-code-button", getString("code"), "-80px",
+                bindCommand("doCode"));
             buttons.image = makeButton("wmd-image-button", getString("image"), "-100px",
                 bindCommand(function (chunk, postProcessing) {
                     return this.doLinkOrImage(chunk, postProcessing, true);
                 })
             );
             makeSpacer(2);
-            buttons.olist = makeButton("wmd-olist-button", getString("olist"), "-120px", bindCommand(function (chunk, postProcessing) {
+            buttons.olist = makeButton("wmd-olist-button", getString("olist"), "-120px",
+                bindCommand(function (chunk, postProcessing) {
                 this.doList(chunk, postProcessing, true);
             }));
-            buttons.ulist = makeButton("wmd-ulist-button", getString("ulist"), "-140px", bindCommand(function (chunk, postProcessing) {
-                this.doList(chunk, postProcessing, false);
-            }));
-            buttons.heading = makeButton("wmd-heading-button", getString("heading"), "-160px", bindCommand("doHeading"));
-            buttons.hr = makeButton("wmd-hr-button", getString("hr"), "-180px", bindCommand("doHorizontalRule"));
+            buttons.ulist = makeButton("wmd-ulist-button", getString("ulist"), "-140px",
+                bindCommand(function (chunk, postProcessing) {
+                    this.doList(chunk, postProcessing, false);
+                }));
+            buttons.heading = makeButton("wmd-heading-button", getString("heading"), "-160px",
+                bindCommand("doHeading"));
+            buttons.hr = makeButton("wmd-hr-button", getString("hr"), "-180px",
+                bindCommand("doHorizontalRule"));
             makeSpacer(3);
             buttons.undo = makeButton("wmd-undo-button", getString("undo"), "-200px", null);
             buttons.undo.execute = function (manager) {
@@ -1114,8 +1129,10 @@
     //
     // The constructed editor object has the methods:
     // - getConverter() returns the markdown converter object that was passed to the constructor
-    // - run() actually starts the editor; should be called after all necessary plugins are registered. Calling this more than once is a no-op.
-    // - refreshPreview() forces the preview to be updated. This method is only available after run() was called.
+    // - run() actually starts the editor; should be called after all necessary plugins are
+    // registered. Calling this more than once is a no-op.
+    // - refreshPreview() forces the preview to be updated. This method is only available after
+    // run() was called.
     Markdown.Editor = function (markdownConverter, idPostfix, options) {
         options = options || {};
 
@@ -1126,17 +1143,23 @@
         if (options.helpButton) {
             options.strings.help = options.strings.help || options.helpButton.title;
         }
-        var getString = function (identifier) { return options.strings[identifier] || defaultsStrings[identifier]; };
+        var getString = function (identifier) { return options.strings[identifier] ||
+            defaultsStrings[identifier]; };
 
         idPostfix = idPostfix || "";
 
         var hooks = this.hooks = new Markdown.HookCollection();
-        hooks.addNoop("onPreviewRefresh");       // called with no arguments after the preview has been refreshed
-        hooks.addNoop("postBlockquoteCreation"); // called with the user's selection *after* the blockquote was created; should return the actual to-be-inserted text
-        hooks.addFalse("insertImageDialog");     /* called with one parameter: a callback to be called with the URL of the image. If the application creates
-                                                  * its own image insertion dialog, this hook should return true, and the callback should be called with the chosen
-                                                  * image url (or null if the user cancelled). If this hook returns false, the default dialog will be used.
-                                                  */
+        // called with no arguments after the preview has been refreshed
+        hooks.addNoop("onPreviewRefresh");
+        // called with the user's selection *after* the blockquote was created; should return the
+        // actual to-be-inserted text
+        hooks.addNoop("postBlockquoteCreation");
+        /* called with one parameter: a callback to be called with the URL of the image.
+         * If the application creates * its own image insertion dialog, this hook should return
+         * true, and the callback should be called with the chosen image url (or null if the
+         * user cancelled). If this hook returns false, the default dialog will be used.
+         */
+        hooks.addFalse("insertImageDialog");
 
         this.getConverter = function () { return markdownConverter; };
 
@@ -1659,7 +1682,8 @@
         // separation.
         var skippedChars = 0;
 
-        var uniquified = complete.replace(regex, function uniquify(wholeMatch, before, inner, afterInner, id, end, offset) {
+        var uniquified = complete.replace(regex, function uniquify(wholeMatch, before, inner,
+                afterInner, id, end, offset) {
             skippedChars += offset;
             fakedefs += " [" + skippedChars + "]: " + testlink + skippedChars + "/unicorn\n";
             skippedChars += before.length;
@@ -1772,7 +1796,8 @@
 
             if (title) {
                 title = title.trim ? title.trim() : title.replace(/^\s*/, "").replace(/\s*$/, "");
-                title = title.replace(/"/g, "quot;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                title = title.replace(/"/g, "quot;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;")
+                    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
             }
             return title ? link + ' "' + title + '"' : link;
         });
@@ -1789,9 +1814,10 @@
             this.addLinkDef(chunk, null);
         }
         else {
-            // We're moving start and end tag back into the selection, since (as we're in the else block) we're not
-            // *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
-            // link text. linkEnteredCallback takes care of escaping any brackets.
+            // We're moving start and end tag back into the selection, since (as we're in the
+            // else block) we're not *removing* a link, but *adding* one, so whatever findTags()
+            // found is now back to being part of the link text. linkEnteredCallback takes care
+            // of escaping any brackets.
             chunk.selection = chunk.startTag + chunk.selection + chunk.endTag;
             chunk.startTag = chunk.endTag = "";
 
@@ -1964,7 +1990,8 @@
                 if (/^>/.test(line)) {                // a)
                     good = true;
                     if (!inChain && line.length > 1) {
-                        // c) any line that starts with ">" and has at least one more character starts the chain
+                        // c) any line that starts with ">" and has at least one more character
+                        // starts the chain
                         inChain = true;
                     }
                 } else if (/^[ \t]*$/.test(line)) {   // b)
@@ -2087,7 +2114,8 @@
                     if (/\n/.test(chunk.selection)) {
                         chunk.selection = chunk.selection.replace(/^/gm, "    ");
                     } else {
-                        // if it's not multiline, do not select the four added spaces; this is more consistent with the doList behavior
+                        // if it's not multiline, do not select the four added spaces; this is
+                        // more consistent with the doList behavior
                         chunk.before += "    ";
                     }
                 }

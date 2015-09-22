@@ -1,11 +1,8 @@
 'use strict';
-var Markdown;
-
 if (typeof exports === "object" && typeof require === "function") {
-     // we're in a CommonJS (e.g. Node.js) module
+    // we're in a CommonJS (e.g. Node.js) module
     Markdown = exports;
-}
-else {
+} else {
     Markdown = {};
 }
 
