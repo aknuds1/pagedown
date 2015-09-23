@@ -1138,7 +1138,7 @@
       var that = this,
       panels;
 
-      this.attach = function () {
+      this.render = function () {
         panels = new PanelCollection(idPostfix);
         var commandManager = new CommandManager(hooks, getString, markdownConverter);
         var previewManager = new PreviewManager(markdownConverter, panels,
