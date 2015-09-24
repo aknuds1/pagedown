@@ -617,43 +617,43 @@
       var normalYShift = "0px";
       var disabledYShift = "-20px";
       var highlightYShift = "-40px";
-      var image = button.getElementsByTagName("span")[0];
+      // var image = button.getElementsByTagName("span")[0];
       if (isEnabled) {
-        image.style.backgroundPosition = button.XShift + " " + normalYShift;
-        button.onmouseover = function () {
-          image.style.backgroundPosition = this.XShift + " " + highlightYShift;
-        };
+        // image.style.backgroundPosition = button.xShift + " " + normalYShift;
+        // button.onmouseover = function () {
+        //   image.style.backgroundPosition = this.xShift + " " + highlightYShift;
+        // };
 
-        button.onmouseout = function () {
-          image.style.backgroundPosition = this.XShift + " " + normalYShift;
-        };
+        // button.onmouseout = function () {
+        //   image.style.backgroundPosition = this.xShift + " " + normalYShift;
+        // };
 
         // IE tries to select the background image "button" text (it's
         // implemented in a list item) so we have to cache the selection
         // on mousedown.
-        if (uaSniffed.isIE) {
-          button.onmousedown = function () {
-            if (doc.activeElement && doc.activeElement !== panels.input) {
-              // we're not even in the input box, so there's no selection
-              return;
-            }
-            panels.ieCachedRange = document.selection.createRange();
-            panels.ieCachedScrollTop = panels.input.scrollTop;
-          };
-        }
+        // if (uaSniffed.isIE) {
+        //   button.onmousedown = function () {
+        //     if (doc.activeElement && doc.activeElement !== panels.input) {
+        //       // we're not even in the input box, so there's no selection
+        //       return;
+        //     }
+        //     panels.ieCachedRange = document.selection.createRange();
+        //     panels.ieCachedScrollTop = panels.input.scrollTop;
+        //   };
+        // }
 
-        if (!button.isHelp) {
-          button.onclick = function () {
-            if (this.onmouseout) {
-              this.onmouseout();
-            }
-            doClick(this);
-            return false;
-          };
-        }
+        // if (!button.isHelp) {
+        //   button.onclick = function () {
+        //     if (this.onmouseout) {
+        //       this.onmouseout();
+        //     }
+        //     doClick(this);
+        //     return false;
+        //   };
+        // }
       } else {
-        image.style.backgroundPosition = button.XShift + " " + disabledYShift;
-        button.onmouseover = button.onmouseout = button.onclick = function () { };
+        // image.style.backgroundPosition = button.xShift + " " + disabledYShift;
+        // button.onmouseover = button.onmouseout = button.onclick = function () { };
       }
     }
 
@@ -665,106 +665,100 @@
     }
 
     function makeSpritedButtonRow() {
-        var buttonBar = panels.buttonBar;
-        var buttonRow = document.createElement("ul");
-        buttonRow.id = "wmd-button-row" + postfix;
-        buttonRow.className = 'wmd-button-row';
-        buttonRow = buttonBar.appendChild(buttonRow);
-        var xPosition = 0;
-        var makeButton = function (id, title, XShift, textOp) {
-          var button = document.createElement("li");
-          button.className = "wmd-button";
-          button.style.left = xPosition + "px";
-          xPosition += 25;
-          var buttonImage = document.createElement("span");
-          button.id = id + postfix;
-          button.appendChild(buttonImage);
-          button.title = title;
-          button.XShift = XShift;
-          if (textOp) {
-            button.textOp = textOp;
-          }
-          setupButton(button, true);
-          buttonRow.appendChild(button);
-          return button;
-        };
-        var makeSpacer = function (num) {
-          var spacer = document.createElement("li");
-          spacer.className = "wmd-spacer wmd-spacer" + num;
-          spacer.id = "wmd-spacer" + num + postfix;
-          buttonRow.appendChild(spacer);
-          xPosition += 25;
-        };
+      var buttonBar = panels.buttonBar;
+      var buttonRow = document.createElement("div");
+      buttonRow.id = "wmd-button-row" + postfix;
+      buttonRow.className = 'wmd-button-row';
+      buttonRow.style.display = 'flex';
+      buttonRow.style['align-items'] = 'center';
+      buttonRow = buttonBar.appendChild(buttonRow);
+      var makeButton = function (id, title, icon, textOp) {
+        var button = document.createElement("span");
+        button.className = "wmd-button icon-" + icon;
+        button.id = id + postfix;
+        button.title = title;
+        if (textOp) {
+          button.textOp = textOp;
+        }
+        setupButton(button, true);
+        buttonRow.appendChild(button);
+        return button;
+      };
 
-        buttons.bold = makeButton("wmd-bold-button", getString("bold"), "0px",
+      var makeSpacer = function () {
+        var spacer = document.createElement("span");
+        spacer.className = "wmd-spacer";
+        buttonRow.appendChild(spacer);
+      };
+
+      buttons.bold = makeButton("wmd-bold-button", getString("bold"), "bold",
         bindCommand("doBold"));
-        buttons.italic = makeButton("wmd-italic-button", getString("italic"), "-20px",
+      buttons.italic = makeButton("wmd-italic-button", getString("italic"), "italic",
         bindCommand("doItalic"));
-        makeSpacer(1);
-        buttons.link = makeButton("wmd-link-button", getString("link"), "-40px",
+      makeSpacer(1);
+      buttons.link = makeButton("wmd-link-button", getString("link"), "link",
         bindCommand(function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, false);
         }));
-        buttons.quote = makeButton("wmd-quote-button", getString("quote"), "-60px",
+      buttons.quote = makeButton("wmd-quote-button", getString("quote"), "quotes-left",
         bindCommand("doBlockquote"));
-        buttons.code = makeButton("wmd-code-button", getString("code"), "-80px",
+      buttons.code = makeButton("wmd-code-button", getString("code"), "code",
         bindCommand("doCode"));
-        buttons.image = makeButton("wmd-image-button", getString("image"), "-100px",
+      buttons.image = makeButton("wmd-image-button", getString("image"), "image2",
         bindCommand(function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, true);
         })
       );
 
-    makeSpacer(2);
-    buttons.olist = makeButton("wmd-olist-button", getString("olist"), "-120px",
-    bindCommand(function (chunk, postProcessing) {
-      this.doList(chunk, postProcessing, true);
-    }));
-    buttons.ulist = makeButton("wmd-ulist-button", getString("ulist"), "-140px",
-    bindCommand(function (chunk, postProcessing) {
-      this.doList(chunk, postProcessing, false);
-    }));
-    buttons.heading = makeButton("wmd-heading-button", getString("heading"), "-160px",
-    bindCommand("doHeading"));
-    buttons.hr = makeButton("wmd-hr-button", getString("hr"), "-180px",
-    bindCommand("doHorizontalRule"));
-    makeSpacer(3);
-    buttons.undo = makeButton("wmd-undo-button", getString("undo"), "-200px", null);
-    buttons.undo.execute = function (manager) {
-      if (manager) {
-        manager.undo();
+      makeSpacer(2);
+      buttons.olist = makeButton("wmd-olist-button", getString("olist"), "list-numbered",
+        bindCommand(function (chunk, postProcessing) {
+          this.doList(chunk, postProcessing, true);
+        }));
+      buttons.ulist = makeButton("wmd-ulist-button", getString("ulist"), "list2",
+        bindCommand(function (chunk, postProcessing) {
+          this.doList(chunk, postProcessing, false);
+        }));
+      buttons.heading = makeButton("wmd-heading-button", getString("heading"), "header",
+        bindCommand("doHeading"));
+      buttons.hr = makeButton("wmd-hr-button", getString("hr"), "ruler",
+        bindCommand("doHorizontalRule"));
+      makeSpacer(3);
+      buttons.undo = makeButton("wmd-undo-button", getString("undo"), "undo", null);
+      buttons.undo.execute = function (manager) {
+        if (manager) {
+          manager.undo();
+        }
+      };
+
+      var redoTitle = /win/.test(nav.platform.toLowerCase()) ?
+      getString("redo") :
+      getString("redomac"); // mac and other non-Windows platforms
+
+      buttons.redo = makeButton("wmd-redo-button", redoTitle, "redo", null);
+      buttons.redo.execute = function (manager) {
+        if (manager) {
+          manager.redo();
+        }
+      };
+
+      if (helpOptions) {
+        var helpButton = document.createElement("li");
+        var helpButtonImage = document.createElement("span");
+        helpButton.appendChild(helpButtonImage);
+        helpButton.className = "wmd-button wmd-help-button";
+        helpButton.id = "wmd-help-button" + postfix;
+        helpButton.isHelp = true;
+        helpButton.style.right = "0px";
+        helpButton.title = getString("help");
+        helpButton.onclick = helpOptions.handler;
+
+        setupButton(helpButton, true);
+        buttonRow.appendChild(helpButton);
+        buttons.help = helpButton;
       }
-    };
 
-    var redoTitle = /win/.test(nav.platform.toLowerCase()) ?
-    getString("redo") :
-    getString("redomac"); // mac and other non-Windows platforms
-
-    buttons.redo = makeButton("wmd-redo-button", redoTitle, "-220px", null);
-    buttons.redo.execute = function (manager) {
-      if (manager) {
-        manager.redo();
-      }
-    };
-
-    if (helpOptions) {
-      var helpButton = document.createElement("li");
-      var helpButtonImage = document.createElement("span");
-      helpButton.appendChild(helpButtonImage);
-      helpButton.className = "wmd-button wmd-help-button";
-      helpButton.id = "wmd-help-button" + postfix;
-      helpButton.XShift = "-240px";
-      helpButton.isHelp = true;
-      helpButton.style.right = "0px";
-      helpButton.title = getString("help");
-      helpButton.onclick = helpOptions.handler;
-
-      setupButton(helpButton, true);
-      buttonRow.appendChild(helpButton);
-      buttons.help = helpButton;
-    }
-
-    setUndoRedoButtonStates();
+      setUndoRedoButtonStates();
     }
 
     makeSpritedButtonRow();
@@ -783,50 +777,49 @@
 
         switch (keyCodeStr) {
           case "b":
-          doClick(buttons.bold);
-          break;
+            doClick(buttons.bold);
+            break;
           case "i":
-          doClick(buttons.italic);
-          break;
+            doClick(buttons.italic);
+            break;
           case "l":
-          doClick(buttons.link);
-          break;
+            doClick(buttons.link);
+            break;
           case "q":
-          doClick(buttons.quote);
-          break;
+            doClick(buttons.quote);
+            break;
           case "k":
-          doClick(buttons.code);
-          break;
+            doClick(buttons.code);
+            break;
           case "g":
-          doClick(buttons.image);
-          break;
+            doClick(buttons.image);
+            break;
           case "o":
-          doClick(buttons.olist);
-          break;
+            doClick(buttons.olist);
+            break;
           case "u":
-          doClick(buttons.ulist);
-          break;
+            doClick(buttons.ulist);
+            break;
           case "h":
-          doClick(buttons.heading);
-          break;
+            doClick(buttons.heading);
+            break;
           case "r":
-          doClick(buttons.hr);
-          break;
+            doClick(buttons.hr);
+            break;
           case "y":
-          doClick(buttons.redo);
-          break;
-          case "z":
-          if (key.shiftKey) {
             doClick(buttons.redo);
-          }
-          else {
-            doClick(buttons.undo);
-          }
-          break;
+            break;
+          case "z":
+            if (key.shiftKey) {
+              doClick(buttons.redo);
+            }
+            else {
+              doClick(buttons.undo);
+            }
+            break;
           default:
-          return;
+            return;
         }
-
 
         if (key.preventDefault) {
           key.preventDefault();
