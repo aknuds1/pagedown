@@ -531,10 +531,12 @@
     this.init();
   }
 
-  function UiManager(postfix, panels, undoManager, previewManager, commandManager,
+  function UiManager(postfix, panels, previewManager, commandManager,
       helpOptions, getString) {
-    var inputBox = panels.input,
-    buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
+    var inputBox = panels.input;
+    var buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
+    var undoManager = new UndoManager(this, previewManager, panels);
+    this.setCommandMode = undoManager.setCommandMode;
 
     function bindCommand(method) {
       if (typeof method === "string") {
@@ -550,9 +552,7 @@
       inputBox.focus();
 
       if (button.textOp) {
-        if (undoManager) {
-          undoManager.setCommandMode();
-        }
+        undoManager.setCommandMode();
 
         var state = new TextareaState(panels);
 
@@ -623,10 +623,8 @@
     }
 
     function setUndoRedoButtonStates() {
-      if (undoManager) {
-        setupButton(buttons.undo, undoManager.canUndo());
-        setupButton(buttons.redo, undoManager.canRedo());
-      }
+      setupButton(buttons.undo, undoManager.canUndo());
+      setupButton(buttons.redo, undoManager.canRedo());
     }
 
     function makeSpritedButtonRow() {
@@ -820,11 +818,12 @@
     }
 
     this.setUndoRedoButtonStates = setUndoRedoButtonStates;
+    this.setUndoRedoButtonStates();
   }
 
   // Handles pushing and popping TextareaStates for undo/redo commands.
   // I should rename the stack variables to list.
-  function UndoManager(callback, panels) {
+  function UndoManager(uiManager, previewManager, panels) {
     var undoObj = this;
     var undoStack = []; // A stack of undo states
     var stackPtr = 0; // The index of the current state
@@ -833,8 +832,15 @@
     var timer; // The setTimeout handle for cancelling the timer
     var inputStateObj;
 
+    function refresh(initial) {
+      previewManager.refresh();
+      if (!initial) {
+        uiManager.setUndoRedoButtonStates();
+      }
+    }
+
     // Push the input area state to the stack.
-    var saveState = function () {
+    var saveState = function (initial) {
       var currState = inputStateObj || new TextareaState(panels);
 
       if (!currState) {
@@ -854,9 +860,7 @@
       }
       undoStack[stackPtr++] = currState;
       undoStack[stackPtr + 1] = null;
-      if (callback) {
-        callback();
-      }
+      refresh(initial);
     };
 
     var refreshState = function (isInitialState) {
@@ -909,10 +913,7 @@
         else {
           undoStack[stackPtr] = new TextareaState(panels);
           undoStack[--stackPtr].restore();
-
-          if (callback) {
-            callback();
-          }
+          refresh();
         }
       }
 
@@ -924,12 +925,8 @@
     // Redo an action.
     this.redo = function () {
       if (undoObj.canRedo()) {
-
         undoStack[++stackPtr].restore();
-
-        if (callback) {
-          callback();
-        }
+        refresh();
       }
 
       mode = "none";
@@ -1038,7 +1035,7 @@
 
     setEventHandlers();
     refreshState(true);
-    saveState();
+    saveState(true);
   }
 
   // end of UndoManager
@@ -1102,23 +1099,14 @@
       var previewManager = new PreviewManager(markdownConverter, panels, function () {
         hooks.onPreviewRefresh();
       });
-      var undoManager, uiManager;
-      undoManager = new UndoManager(function () {
-        previewManager.refresh();
-        // not available on the first call
-        if (uiManager) {
-          uiManager.setUndoRedoButtonStates();
-        }
-      }, panels);
+      var uiManager = new UiManager(idPostfix, panels, previewManager, commandManager,
+        options.helpButton, getString);
+
       this.textOperation = function (f) {
-        undoManager.setCommandMode();
+        uiManager.setCommandMode();
         f();
         that.refreshPreview();
       };
-
-      uiManager = new UiManager(idPostfix, panels, undoManager, previewManager,
-        commandManager, options.helpButton, getString);
-      uiManager.setUndoRedoButtonStates();
 
       var forceRefresh = that.refreshPreview = function () {
         previewManager.refresh(true);
