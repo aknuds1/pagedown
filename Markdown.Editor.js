@@ -257,7 +257,7 @@
     this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
     this.preview = doc.getElementById("wmd-preview" + postfix);
     this.input = doc.getElementById("wmd-input" + postfix);
-    this.input.value = text;
+    this.input.value = text || '';
   }
 
   function CommandManager(pluginHooks, getString, converter) {
