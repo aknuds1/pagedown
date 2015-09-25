@@ -73,7 +73,7 @@
   //  END OF YOUR CHANGES
   // -------------------------------------------------------------------
 
-  function PreviewManager(converter, panels, previewRefreshCallback) {
+  function PreviewManager(converter, panels, hooks) {
     var timeout;
     var elapsedTime;
     var oldInputText;
@@ -136,7 +136,7 @@
 
       if (panels.preview) {
         previewSet(text);
-        previewRefreshCallback();
+        hooks.onPreviewRefresh();
       }
 
       setPanelScrollTops();
@@ -147,7 +147,6 @@
       }
 
       var fullTop = position.getTop(panels.input) - getDocScrollTop();
-
       if (uaSniffed.isIE) {
         setTimeout(function () {
           window.scrollBy(0, fullTop - emptyTop);
@@ -166,15 +165,14 @@
 
       var text = panels.input.value;
       if (text && text === oldInputText) {
-        return; // Input text hasn't changed.
-      } else {
-        oldInputText = text;
+         // Input text hasn't changed.
+        return;
       }
 
+      oldInputText = text;
+
       var prevTime = new Date().getTime();
-
       text = converter.makeHtml(text);
-
       // Calculate the processing time of the HTML creation.
       // It's used as the delay time in the event listener.
       var currTime = new Date().getTime();
@@ -191,13 +189,10 @@
       }
 
       if (startType !== "manual") {
-
         var delay = 0;
-
         if (startType === "delayed") {
           delay = elapsedTime;
         }
-
         if (delay > maxDelay) {
           delay = maxDelay;
         }
@@ -531,11 +526,11 @@
     this.init();
   }
 
-  function UiManager(postfix, panels, previewManager, commandManager,
-      helpOptions, getString) {
+  function UiManager(postfix, panels, previewManager, commandManager, helpOptions, getString,
+      hooks) {
     var inputBox = panels.input;
     var buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
-    var undoManager = new UndoManager(this, previewManager, panels);
+    var undoManager = new UndoManager(this, previewManager, panels, hooks);
     this.setCommandMode = undoManager.setCommandMode;
 
     function bindCommand(method) {
@@ -823,7 +818,7 @@
 
   // Handles pushing and popping TextareaStates for undo/redo commands.
   // I should rename the stack variables to list.
-  function UndoManager(uiManager, previewManager, panels) {
+  function UndoManager(uiManager, previewManager, panels, hooks) {
     var undoObj = this;
     var undoStack = []; // A stack of undo states
     var stackPtr = 0; // The index of the current state
@@ -832,27 +827,28 @@
     var timer; // The setTimeout handle for cancelling the timer
     var inputStateObj;
 
-    function refresh(initial) {
+    function refreshPreview(initial) {
       previewManager.refresh();
       if (!initial) {
         uiManager.setUndoRedoButtonStates();
+        hooks.onChange();
       }
     }
 
     // Push the input area state to the stack.
-    var saveState = function (initial) {
+    function saveState(initial) {
       var currState = inputStateObj || new TextareaState(panels);
-
       if (!currState) {
         return false;
       }
+
       if (mode === "moving") {
-        if (!lastState) {
+        if (lastState == null) {
           lastState = currState;
         }
         return false;
       }
-      if (lastState) {
+      if (lastState != null) {
         if (undoStack[stackPtr - 1].text !== lastState.text) {
           undoStack[stackPtr++] = lastState;
         }
@@ -860,16 +856,16 @@
       }
       undoStack[stackPtr++] = currState;
       undoStack[stackPtr + 1] = null;
-      refresh(initial);
-    };
+      refreshPreview(initial);
+    }
 
-    var refreshState = function (isInitialState) {
+    function refreshState(isInitialState) {
       inputStateObj = new TextareaState(panels, isInitialState);
       timer = undefined;
-    };
+    }
 
     // Set the mode for later logic steps.
-    var setMode = function (newMode, noSave) {
+    function setMode(newMode, noSave) {
       if (mode !== newMode) {
         mode = newMode;
         if (!noSave) {
@@ -883,7 +879,7 @@
       else {
         inputStateObj = null;
       }
-    };
+    }
 
     this.setCommandMode = function () {
       mode = "command";
@@ -913,7 +909,7 @@
         else {
           undoStack[stackPtr] = new TextareaState(panels);
           undoStack[--stackPtr].restore();
-          refresh();
+          refreshPreview();
         }
       }
 
@@ -926,7 +922,7 @@
     this.redo = function () {
       if (undoObj.canRedo()) {
         undoStack[++stackPtr].restore();
-        refresh();
+        refreshPreview();
       }
 
       mode = "none";
@@ -977,7 +973,6 @@
     var handleModeChange = function (event) {
       if (!event.ctrlKey && !event.metaKey) {
         var keyCode = event.keyCode;
-
         if ((keyCode >= 33 && keyCode <= 40) || (keyCode >= 63232 && keyCode <= 63235)) {
           // 33 - 40: page up/dn and arrow keys
           // 63232 - 63235: page up/dn and arrow keys on safari
@@ -1003,7 +998,7 @@
       }
     };
 
-    var setEventHandlers = function () {
+    function setEventHandlers() {
       util.addEvent(panels.input, "keypress", function (event) {
         // keyCode 89: y
         // keyCode 90: z
@@ -1013,7 +1008,7 @@
         }
       });
 
-      var handlePaste = function () {
+      function handlePaste() {
         if (uaSniffed.isIE || (inputStateObj && inputStateObj.text !== panels.input.value)) {
           if (timer === undefined) {
             mode = "paste";
@@ -1031,7 +1026,7 @@
 
       panels.input.onpaste = handlePaste;
       panels.input.ondrop = handlePaste;
-    };
+    }
 
     setEventHandlers();
     refreshState(true);
@@ -1070,13 +1065,15 @@
     if (options.helpButton) {
       options.strings.help = options.strings.help || options.helpButton.title;
     }
-    var getString = function (identifier) {
+    function getString(identifier) {
       return options.strings[identifier] || defaultsStrings[identifier];
     };
 
     idPostfix = idPostfix || "";
 
     var hooks = this.hooks = new Markdown.HookCollection();
+    // Called with no arguments after state has changed
+    hooks.addNoop("onChange");
     // called with no arguments after the preview has been refreshed
     hooks.addNoop("onPreviewRefresh");
     // called with the user's selection *after* the blockquote was created; should return the
@@ -1096,11 +1093,9 @@
     this.render = function () {
       panels = new PanelCollection(idPostfix);
       var commandManager = new CommandManager(hooks, getString, markdownConverter);
-      var previewManager = new PreviewManager(markdownConverter, panels, function () {
-        hooks.onPreviewRefresh();
-      });
+      var previewManager = new PreviewManager(markdownConverter, panels, hooks);
       var uiManager = new UiManager(idPostfix, panels, previewManager, commandManager,
-        options.helpButton, getString);
+        options.helpButton, getString, hooks);
 
       this.textOperation = function (f) {
         uiManager.setCommandMode();
@@ -1108,11 +1103,10 @@
         that.refreshPreview();
       };
 
-      var forceRefresh = that.refreshPreview = function () {
+      that.refreshPreview = function () {
         previewManager.refresh(true);
       };
-
-      forceRefresh();
+      that.refreshPreview();
     };
   };
 
