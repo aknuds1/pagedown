@@ -253,17 +253,18 @@
   // This ONLY affects Internet Explorer (tested on versions 6, 7
   // and 8) and ONLY on button clicks. Keyboard shortcuts work
   // normally since the focus never leaves the textarea.
-  function PanelCollection(postfix) {
+  function PanelCollection(postfix, text) {
     this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
     this.preview = doc.getElementById("wmd-preview" + postfix);
     this.input = doc.getElementById("wmd-input" + postfix);
+    this.input.value = text;
   }
 
   function CommandManager(pluginHooks, getString, converter) {
     this.hooks = pluginHooks;
     this.getString = getString;
     this.converter = converter;
-  }    // The input textarea state/contents.
+  }
 
   // before: contains all the text in the input box BEFORE the selection.
   // after: contains all the text in the input box AFTER the selection.
@@ -1087,8 +1088,8 @@
 
     var that = this, panels;
 
-    this.render = function () {
-      panels = new PanelCollection(idPostfix);
+    this.render = function (text) {
+      panels = new PanelCollection(idPostfix, text);
       var commandManager = new CommandManager(hooks, getString, markdownConverter);
       var previewManager = new PreviewManager(markdownConverter, panels, hooks);
       var uiManager = new UiManager(idPostfix, panels, previewManager, commandManager,
