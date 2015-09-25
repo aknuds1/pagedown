@@ -1415,7 +1415,6 @@
       // want it to be centered.
       dialog.style.marginTop = -(position.getHeight(dialog) / 2) + "px";
       dialog.style.marginLeft = -(position.getWidth(dialog) / 2) + "px";
-
     };
 
     // Why is this in a zero-length timeout?
@@ -1522,16 +1521,17 @@
   };
 
   commandProto.stripLinkDefs = function (text, defsToAdd) {
-    text = text.replace(/^[ ]{0,3}\[(\d+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|$)/gm,
-    function (totalMatch, id, link, newlines, title) {
-      defsToAdd[id] = totalMatch.replace(/\s*$/, "");
-      if (newlines) {
-        // Strip the title and return that separately.
-        defsToAdd[id] = totalMatch.replace(/["(](.+?)[")]$/, "");
-        return newlines + title;
-      }
-      return "";
-    });
+    text = text.replace(
+      /^[ ]{0,3}\[(\d+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|$)/gm,
+      function (totalMatch, id, link, newlines, title) {
+        defsToAdd[id] = totalMatch.replace(/\s*$/, "");
+        if (newlines) {
+          // Strip the title and return that separately.
+          defsToAdd[id] = totalMatch.replace(/["(](.+?)[")]$/, "");
+          return newlines + title;
+        }
+        return "";
+      });
 
     return text;
   };
@@ -1611,8 +1611,7 @@
     // and b) more than one level of nesting is neither supported by the regex
     // nor making a lot of sense (the only use case for nesting is a linked
     // image)
-    var getLink = function (wholeMatch, before, inner, afterInner, id,
-        end, offset) {
+    var getLink = function (wholeMatch, before, inner, afterInner, id, end, offset) {
       if (!okayToModify(skippedChars + offset)) {
         return wholeMatch;
       }
@@ -1715,8 +1714,7 @@
       chunk.startTag = chunk.startTag.replace(/!?\[/, "");
       chunk.endTag = "";
       this.addLinkDef(chunk, null);
-    }
-    else {
+    } else {
       // We're moving start and end tag back into the selection, since
       // (as we're in the else block) we're not *removing* a link, but
       // *adding* one, so whatever findTags() found is now back to being
@@ -1736,7 +1734,7 @@
       var linkEnteredCallback = function (link) {
         background.parentNode.removeChild(background);
 
-        if (link !== null) {
+        if (link != null) {
           // (                          $1
           //     [^\\]                  anything that's not a backslash
           //     (?:\\\\)*              an even number (this includes zero)
@@ -1785,8 +1783,7 @@
           ui.prompt(this.getString("imagedialog"), imageDefaultText,
           linkEnteredCallback);
         }
-      }
-      else {
+      } else {
         ui.prompt(this.getString("linkdialog"), linkDefaultText,
         linkEnteredCallback);
       }
