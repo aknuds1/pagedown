@@ -531,7 +531,7 @@
     this.init();
   }
 
-  function UIManager(postfix, panels, undoManager, previewManager, commandManager,
+  function UiManager(postfix, panels, undoManager, previewManager, commandManager,
       helpOptions, getString) {
     var inputBox = panels.input,
     buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
@@ -1119,7 +1119,7 @@
         };
       }
 
-      uiManager = new UIManager(idPostfix, panels, undoManager, previewManager,
+      uiManager = new UiManager(idPostfix, panels, undoManager, previewManager,
         commandManager, options.helpButton, getString);
       uiManager.setUndoRedoButtonStates();
 
