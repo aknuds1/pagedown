@@ -614,17 +614,8 @@
     }
 
     function setupButton(button, isEnabled) {
-      var normalYShift = "0px";
-      var disabledYShift = "-20px";
-      var highlightYShift = "-40px";
-      // var image = button.getElementsByTagName("span")[0];
       if (isEnabled) {
-        button.onmouseover = function () {
-          button.style.color = '#0a83dc';
-        };
-        button.onmouseout = function () {
-          button.style.color = '#000';
-        };
+        button.classList.add('enabled');
 
         if (!button.isHelp) {
           button.onclick = function () {
@@ -637,6 +628,7 @@
         }
       } else {
         button.onmouseover = button.onmouseout = button.onclick = function () {};
+        button.classList.remove('enabled');
       }
     }
 
