@@ -86,26 +86,24 @@
 
       if (window.innerHeight) {
         result = window.pageYOffset;
-      }
-      else
-      if (doc.documentElement && doc.documentElement.scrollTop) {
-        result = doc.documentElement.scrollTop;
-      }
-      else
-      if (doc.body) {
-        result = doc.body.scrollTop;
+      } else {
+        if (doc.documentElement != null && doc.documentElement.scrollTop != null) {
+          result = doc.documentElement.scrollTop;
+        } else if (doc.body != null) {
+          result = doc.body.scrollTop;
+        }
       }
 
       return result;
     };
 
-    var nonSuckyBrowserPreviewSet = function (text) {
+    function nonSuckyBrowserPreviewSet(text) {
       panels.preview.innerHTML = text;
     };
 
     var previewSetter;
 
-    var previewSet = function (text) {
+    function previewSet(text) {
       if (previewSetter) {
         return previewSetter(text);
       }
@@ -119,21 +117,21 @@
       }
     };
 
-    var getScaleFactor = function (panel) {
+    function getScaleFactor(panel) {
       if (panel.scrollHeight <= panel.clientHeight) {
         return 1;
       }
       return panel.scrollTop / (panel.scrollHeight - panel.clientHeight);
     };
 
-    var setPanelScrollTops = function () {
+    function setPanelScrollTops() {
       if (panels.preview) {
         panels.preview.scrollTop = (panels.preview.scrollHeight - panels.preview.clientHeight) *
-        getScaleFactor(panels.preview);
+          getScaleFactor(panels.preview);
       }
     };
 
-    var pushPreviewHtml = function (text) {
+    function pushPreviewHtml(text) {
       var emptyTop = position.getTop(panels.input) - getDocScrollTop();
 
       if (panels.preview) {
@@ -160,7 +158,7 @@
       }
     };
 
-    var makePreviewHtml = function () {
+    function makePreviewHtml() {
       // If there is no registered preview panel
       // there is nothing to do.
       if (!panels.preview) {
@@ -188,7 +186,7 @@
     };
 
     // setTimeout is already used.  Used as an event listener.
-    var applyTimeout = function () {
+   function applyTimeout() {
 
       if (timeout) {
         clearTimeout(timeout);
@@ -228,7 +226,7 @@
     // IE doesn't let you use innerHTML if the element is contained somewhere in a table
     // (which is the case for inline editing) -- in that case, detach the element, set the
     // value, and reattach. Yes, that *is* ridiculous.
-    var ieSafePreviewSet = function (text) {
+    function ieSafePreviewSet(text) {
       var preview = panels.preview;
       var parent = preview.parentNode;
       var sibling = preview.nextSibling;
