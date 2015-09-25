@@ -1088,6 +1088,10 @@
 
     var that = this, panels;
 
+    this.getText = function () {
+      return panels.input.value;
+    };
+
     this.render = function (text) {
       panels = new PanelCollection(idPostfix, text);
       var commandManager = new CommandManager(hooks, getString, markdownConverter);
@@ -1983,16 +1987,14 @@ chunk.before = chunk.before.replace(
     }
   };
 
-commandProto.doCode = function (chunk) {
-  var hasTextBefore = /\S[ ]*$/.test(chunk.before);
-  var hasTextAfter = /^[ ]*\S/.test(chunk.after);
+  commandProto.doCode = function (chunk) {
+    var hasTextBefore = /\S[ ]*$/.test(chunk.before);
+    var hasTextAfter = /^[ ]*\S/.test(chunk.after);
 
-  // Use 'four space' markdown if the selection is on its own
-  // line or is multiline.
-  if ((!hasTextAfter && !hasTextBefore) || /\n/.test(chunk.selection)) {
-
-    chunk.before = chunk.before.replace(/[ ]{4}$/,
-      function (totalMatch) {
+    // Use 'four space' markdown if the selection is on its own
+    // line or is multiline.
+    if ((!hasTextAfter && !hasTextBefore) || /\n/.test(chunk.selection)) {
+      chunk.before = chunk.before.replace(/[ ]{4}$/, function (totalMatch) {
         chunk.selection = totalMatch + chunk.selection;
         return "";
       });
@@ -2027,10 +2029,8 @@ commandProto.doCode = function (chunk) {
           chunk.selection = chunk.selection.replace(/^(?:[ ]{4}|[ ]{0,3}\t)/gm, "");
         }
       }
-    }
-    else {
+    } else {
       // Use backticks (`) to delimit the code block.
-
       chunk.trimWhitespace();
       chunk.findTags(/`/, /`/);
 
