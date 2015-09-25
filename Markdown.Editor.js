@@ -12,8 +12,8 @@
 
   // Used to work around some browser bugs where we can't use feature testing.
   uaSniffed = {
-    isIE: /msie/.test(nav.userAgent.toLowerCase()),
-    isIE_5or6: /msie 6/.test(nav.userAgent.toLowerCase()) ||
+    isIe: /msie/.test(nav.userAgent.toLowerCase()),
+    isIe5or6: /msie 6/.test(nav.userAgent.toLowerCase()) ||
     /msie 5/.test(nav.userAgent.toLowerCase()),
     isOpera: /opera/.test(nav.userAgent.toLowerCase()),
   };
@@ -147,7 +147,7 @@
       }
 
       var fullTop = position.getTop(panels.input) - getDocScrollTop();
-      if (uaSniffed.isIE) {
+      if (uaSniffed.isIe) {
         setTimeout(function () {
           window.scrollBy(0, fullTop - emptyTop);
         }, 0);
@@ -803,7 +803,7 @@
     });
 
     // special handler because IE clears the context of the textbox on ESC
-    if (uaSniffed.isIE) {
+    if (uaSniffed.isIe) {
       util.addEvent(inputBox, "keydown", function (key) {
         var code = key.keyCode;
         if (code === 27) {
@@ -873,7 +873,7 @@
         }
       }
 
-      if (!uaSniffed.isIE || mode !== "moving") {
+      if (!uaSniffed.isIe || mode !== "moving") {
         timer = setTimeout(refreshState, 1);
       }
       else {
@@ -1009,7 +1009,7 @@
       });
 
       function handlePaste() {
-        if (uaSniffed.isIE || (inputStateObj && inputStateObj.text !== panels.input.value)) {
+        if (uaSniffed.isIe || (inputStateObj && inputStateObj.text !== panels.input.value)) {
           if (timer === undefined) {
             mode = "paste";
             saveState();
@@ -1262,7 +1262,7 @@
 
     style.zIndex = "1000";
 
-    if (uaSniffed.isIE) {
+    if (uaSniffed.isIe) {
       style.filter = "alpha(opacity=50)";
     }
     else {
@@ -1272,7 +1272,7 @@
     var pageSize = position.getPageSize();
     style.height = pageSize[1] + "px";
 
-    if (uaSniffed.isIE) {
+    if (uaSniffed.isIe) {
       style.left = doc.documentElement.scrollLeft;
       style.width = doc.documentElement.clientWidth;
     }
@@ -1404,7 +1404,7 @@
       dialog.style.top = "50%";
       dialog.style.left = "50%";
       dialog.style.display = "block";
-      if (uaSniffed.isIE_5or6) {
+      if (uaSniffed.isIe5or6) {
         dialog.style.position = "absolute";
         dialog.style.top = doc.documentElement.scrollTop + 200 + "px";
         dialog.style.left = "50%";
