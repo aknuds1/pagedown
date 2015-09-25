@@ -78,7 +78,6 @@
     var elapsedTime;
     var oldInputText;
     var maxDelay = 3000;
-    var startType = "delayed"; // The other legal value is "manual"
     var isFirstTimeFilled = true;
 
     function getDocScrollTop() {
@@ -181,23 +180,19 @@
       pushPreviewHtml(text);
     }
 
-    // setTimeout is already used.  Used as an event listener.
+    // setTimeout is already used. Used as an event listener.
    function applyTimeout() {
       if (timeout) {
         clearTimeout(timeout);
         timeout = undefined;
       }
 
-      if (startType !== "manual") {
-        var delay = 0;
-        if (startType === "delayed") {
-          delay = elapsedTime;
-        }
-        if (delay > maxDelay) {
-          delay = maxDelay;
-        }
-        timeout = setTimeout(makePreviewHtml, delay);
+      var delay = 0;
+      delay = elapsedTime;
+      if (delay > maxDelay) {
+        delay = maxDelay;
       }
+      timeout = setTimeout(makePreviewHtml, delay);
     }
 
     this.refresh = function (requiresRefresh) {
@@ -247,16 +242,16 @@
   // Also holds ieCachedRange and ieCachedScrollTop, where necessary; working around
   // this issue:
   // Internet explorer has problems with CSS sprite buttons that use HTML
-  // lists.  When you click on the background image "button", IE will
+  // lists. When you click on the background image "button", IE will
   // select the non-existent link text and discard the selection in the
-  // textarea.  The solution to this is to cache the textarea selection
-  // on the button's mousedown event and set a flag.  In the part of the
+  // textarea. The solution to this is to cache the textarea selection
+  // on the button's mousedown event and set a flag. In the part of the
   // code where we need to grab the selection, we check for the flag
   // and, if it's set, use the cached area instead of querying the
   // textarea.
   //
   // This ONLY affects Internet Explorer (tested on versions 6, 7
-  // and 8) and ONLY on button clicks.  Keyboard shortcuts work
+  // and 8) and ONLY on button clicks. Keyboard shortcuts work
   // normally since the focus never leaves the textarea.
   function PanelCollection(postfix) {
     this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
@@ -451,7 +446,7 @@
         stateObj.text = util.fixEolChars(inputArea.value);
 
         // IE loses the selection in the textarea when buttons are
-        // clicked.  On IE we cache the selection. Here, if something is cached,
+        // clicked. On IE we cache the selection. Here, if something is cached,
         // we take it.
         var range = panels.ieCachedRange || doc.selection.createRange();
 
@@ -557,7 +552,7 @@
 
         var chunks = state.getChunks();
 
-        // Some commands launch a "modal" prompt dialog.  Javascript
+        // Some commands launch a "modal" prompt dialog. Javascript
         // can't really make a modal dialog box and the WMD code
         // will continue to execute while the dialog is displayed.
         // This prevents the dialog pattern I'm used to and means
@@ -572,7 +567,7 @@
         // in a function parameter.
         //
         // Yes this is awkward and I think it sucks, but there's
-        // no real workaround.  Only the image and link code
+        // no real workaround. Only the image and link code
         // create dialogs and require the function pointers.
         var fixupInputArea = function () {
 
@@ -1009,13 +1004,15 @@
       });
 
       function handlePaste() {
-        if (uaSniffed.isIe || (inputStateObj && inputStateObj.text !== panels.input.value)) {
-          if (timer === undefined) {
+        // Use a timeout to make sure that element has been updated with pasted text
+        setTimeout(function () {
+          if (uaSniffed.isIe || (inputStateObj && inputStateObj.text !== panels.input.value) &&
+              timer == null) {
             mode = "paste";
             saveState();
             refreshState();
           }
-        }
+        }, 0);
       };
 
       util.addEvent(panels.input, "keydown", handleCtrlYZ);
@@ -1126,7 +1123,7 @@
   // event.
   util.addEvent = function (elem, event, listener) {
     if (elem.attachEvent) {
-      // IE only.  The "on" is mandatory.
+      // IE only. The "on" is mandatory.
       elem.attachEvent("on" + event, listener);
     }
     else {
@@ -1139,7 +1136,7 @@
   // event.
   util.removeEvent = function (elem, event, listener) {
     if (elem.detachEvent) {
-      // IE only.  The "on" is mandatory.
+      // IE only. The "on" is mandatory.
       elem.detachEvent("on" + event, listener);
     }
     else {
@@ -1155,7 +1152,7 @@
     return text;
   };
 
-  // Extends a regular expression.  Returns a new RegExp
+  // Extends a regular expression. Returns a new RegExp
   // using pre + regex + post as the expression.
   // Used in a few functions where we have a base
   // expression and we want to pre- or append some
@@ -1483,7 +1480,7 @@
     chunk.trimWhitespace();
     chunk.selection = chunk.selection.replace(/\n{2,}/g, "\n");
 
-    // Look for stars before and after.  Is the chunk already marked up?
+    // Look for stars before and after. Is the chunk already marked up?
     // note that these regex matches cannot fail
     var starsBefore = /(\**$)/.exec(chunk.before)[0];
     var starsAfter = /(^\**)/.exec(chunk.after)[0];
@@ -1496,7 +1493,7 @@
       chunk.after = chunk.after.replace(re("^[*]{" + nStars + "}", ""), "");
     }
     else if (!chunk.selection && starsAfter) {
-      // It's not really clear why this code is necessary.  It just moves
+      // It's not really clear why this code is necessary. It just moves
       // some arbitrary stuff around.
       chunk.after = chunk.after.replace(/^([*_]*)/, "");
       chunk.before = chunk.before.replace(/(\s?)$/, "");
