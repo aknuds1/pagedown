@@ -1103,21 +1103,18 @@
         hooks.onPreviewRefresh();
       });
       var undoManager, uiManager;
-
-      if (!/\?noundo/.test(doc.location.href)) {
-        undoManager = new UndoManager(function () {
-          previewManager.refresh();
-          // not available on the first call
-          if (uiManager) {
-            uiManager.setUndoRedoButtonStates();
-          }
-        }, panels);
-        this.textOperation = function (f) {
-          undoManager.setCommandMode();
-          f();
-          that.refreshPreview();
-        };
-      }
+      undoManager = new UndoManager(function () {
+        previewManager.refresh();
+        // not available on the first call
+        if (uiManager) {
+          uiManager.setUndoRedoButtonStates();
+        }
+      }, panels);
+      this.textOperation = function (f) {
+        undoManager.setCommandMode();
+        f();
+        that.refreshPreview();
+      };
 
       uiManager = new UiManager(idPostfix, panels, undoManager, previewManager,
         commandManager, options.helpButton, getString);
