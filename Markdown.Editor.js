@@ -81,16 +81,6 @@
     var startType = "delayed"; // The other legal value is "manual"
     var isFirstTimeFilled = true;
 
-    // Adds event listeners to elements
-    var setupEvents = function (inputElem, listener) {
-      util.addEvent(inputElem, "input", listener);
-      inputElem.onpaste = listener;
-      inputElem.ondrop = listener;
-
-      util.addEvent(inputElem, "keypress", listener);
-      util.addEvent(inputElem, "keydown", listener);
-    };
-
     var getDocScrollTop = function () {
       var result = 0;
 
@@ -251,7 +241,11 @@
       }
     };
 
-    setupEvents(panels.input, applyTimeout);
+    util.addEvent(panels.input, "input", applyTimeout);
+    panels.input.onpaste = applyTimeout;
+    panels.input.ondrop = applyTimeout;
+    util.addEvent(panels.input, "keypress", applyTimeout);
+    util.addEvent(panels.input, "keydown", applyTimeout);
     makePreviewHtml();
 
     if (panels.preview) {
