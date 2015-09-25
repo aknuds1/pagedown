@@ -1412,23 +1412,21 @@
         form.appendChild(input);
 
         // The ok button
-        var okButton = doc.createElement("input");
-        okButton.type = "button";
+        var okButton = doc.createElement("button");
         okButton.onclick = function () { return close(false); };
-        okButton.value = "OK";
+        okButton.className = 'pure-button pure-button-primary';
+        okButton.innerHTML = "OK";
         style = okButton.style;
         style.margin = "10px";
-        style.display = "inline";
         style.width = "7em";
 
         // The cancel button
-        var cancelButton = doc.createElement("input");
-        cancelButton.type = "button";
+        var cancelButton = doc.createElement("button");
         cancelButton.onclick = function () { return close(true); };
-        cancelButton.value = "Cancel";
+        cancelButton.className = 'pure-button';
+        cancelButton.innerHTML = "Cancel";
         style = cancelButton.style;
         style.margin = "10px";
-        style.display = "inline";
         style.width = "7em";
 
         form.appendChild(okButton);
