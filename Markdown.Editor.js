@@ -619,41 +619,24 @@
       var highlightYShift = "-40px";
       // var image = button.getElementsByTagName("span")[0];
       if (isEnabled) {
-        // image.style.backgroundPosition = button.xShift + " " + normalYShift;
-        // button.onmouseover = function () {
-        //   image.style.backgroundPosition = this.xShift + " " + highlightYShift;
-        // };
+        button.onmouseover = function () {
+          button.style.color = '#0a83dc';
+        };
+        button.onmouseout = function () {
+          button.style.color = '#000';
+        };
 
-        // button.onmouseout = function () {
-        //   image.style.backgroundPosition = this.xShift + " " + normalYShift;
-        // };
-
-        // IE tries to select the background image "button" text (it's
-        // implemented in a list item) so we have to cache the selection
-        // on mousedown.
-        // if (uaSniffed.isIE) {
-        //   button.onmousedown = function () {
-        //     if (doc.activeElement && doc.activeElement !== panels.input) {
-        //       // we're not even in the input box, so there's no selection
-        //       return;
-        //     }
-        //     panels.ieCachedRange = document.selection.createRange();
-        //     panels.ieCachedScrollTop = panels.input.scrollTop;
-        //   };
-        // }
-
-        // if (!button.isHelp) {
-        //   button.onclick = function () {
-        //     if (this.onmouseout) {
-        //       this.onmouseout();
-        //     }
-        //     doClick(this);
-        //     return false;
-        //   };
-        // }
+        if (!button.isHelp) {
+          button.onclick = function () {
+            if (this.onmouseout) {
+              this.onmouseout();
+            }
+            doClick(this);
+            return false;
+          };
+        }
       } else {
-        // image.style.backgroundPosition = button.xShift + " " + disabledYShift;
-        // button.onmouseover = button.onmouseout = button.onclick = function () { };
+        button.onmouseover = button.onmouseout = button.onclick = function () {};
       }
     }
 
