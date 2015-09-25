@@ -81,7 +81,7 @@
     var startType = "delayed"; // The other legal value is "manual"
     var isFirstTimeFilled = true;
 
-    var getDocScrollTop = function () {
+    function getDocScrollTop() {
       var result = 0;
 
       if (window.innerHeight) {
@@ -95,11 +95,11 @@
       }
 
       return result;
-    };
+    }
 
     function nonSuckyBrowserPreviewSet(text) {
       panels.preview.innerHTML = text;
-    };
+    }
 
     var previewSetter;
 
@@ -115,7 +115,7 @@
         previewSetter = ieSafePreviewSet;
         previewSetter(text);
       }
-    };
+    }
 
     function getScaleFactor(panel) {
       if (panel.scrollHeight <= panel.clientHeight) {
@@ -129,7 +129,7 @@
         panels.preview.scrollTop = (panels.preview.scrollHeight - panels.preview.clientHeight) *
           getScaleFactor(panels.preview);
       }
-    };
+    }
 
     function pushPreviewHtml(text) {
       var emptyTop = position.getTop(panels.input) - getDocScrollTop();
@@ -152,24 +152,22 @@
         setTimeout(function () {
           window.scrollBy(0, fullTop - emptyTop);
         }, 0);
-      }
-      else {
+      } else {
         window.scrollBy(0, fullTop - emptyTop);
       }
-    };
+    }
 
     function makePreviewHtml() {
       // If there is no registered preview panel
       // there is nothing to do.
-      if (!panels.preview) {
+      if (panels.preview == null) {
         return;
       }
 
       var text = panels.input.value;
       if (text && text === oldInputText) {
         return; // Input text hasn't changed.
-      }
-      else {
+      } else {
         oldInputText = text;
       }
 
@@ -183,11 +181,10 @@
       elapsedTime = currTime - prevTime;
 
       pushPreviewHtml(text);
-    };
+    }
 
     // setTimeout is already used.  Used as an event listener.
    function applyTimeout() {
-
       if (timeout) {
         clearTimeout(timeout);
         timeout = undefined;
@@ -206,10 +203,9 @@
         }
         timeout = setTimeout(makePreviewHtml, delay);
       }
-    };
+    }
 
     this.refresh = function (requiresRefresh) {
-
       if (requiresRefresh) {
         oldInputText = "";
         makePreviewHtml();
@@ -237,7 +233,7 @@
       } else {
         parent.insertBefore(preview, sibling);
       }
-    };
+    }
 
     util.addEvent(panels.input, "input", applyTimeout);
     panels.input.onpaste = applyTimeout;
