@@ -1,5 +1,5 @@
 #PageDown
-PageDown is the version of Attacklab's Showdown and WMD as used on [Stack Overflow](https://stackoverflow.com)
+This is a modified version of PageDown, the Markdown editor used on [Stack Overflow](https://stackoverflow.com)
 and the other [Stack Exchange](https://stackexchange.com) sites.
 
 It includes a converter that turns Markdown into HTML, a Markdown editor with realtime preview of the
