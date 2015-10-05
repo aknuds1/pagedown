@@ -522,7 +522,7 @@
     this.init();
   }
 
-  function UiManager(postfix, panels, previewManager, commandManager, helpOptions, getString,
+  function UiManager(postfix, panels, previewManager, commandManager, options, getString,
       hooks) {
     var inputBox = panels.input;
     var buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
@@ -627,11 +627,11 @@
       buttonRow.style['align-items'] = 'center';
       buttonRow = buttonBar.appendChild(buttonRow);
 
-      var makeButton = function (id, title, icon, textOp) {
+      var makeButton = function (id, name, textOp, icon) {
         var button = document.createElement("span");
-        button.className = "wmd-button icon-" + icon;
+        button.className = "wmd-button icon-" + options.icons[icon || name];
         button.id = id + postfix;
-        button.title = getString(title);
+        button.title = getString(name);
         if (textOp) {
           button.textOp = textOp;
         }
@@ -646,40 +646,34 @@
         buttonRow.appendChild(spacer);
       };
 
-      buttons.bold = makeButton("wmd-bold-button", "bold", "bold",
-        bindCommand("doBold"));
-      buttons.italic = makeButton("wmd-italic-button", "italic", "italic",
-        bindCommand("doItalic"));
+      buttons.bold = makeButton("wmd-bold-button", "bold", bindCommand("doBold"));
+      buttons.italic = makeButton("wmd-italic-button", "italic", bindCommand("doItalic"));
       makeSpacer(1);
-      buttons.link = makeButton("wmd-link-button", "link", "link",
-        bindCommand(function (chunk, postProcessing) {
+      buttons.link = makeButton("wmd-link-button", "link", bindCommand(
+        function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, false);
         }));
-      buttons.quote = makeButton("wmd-quote-button", "quote", "quotes-left",
-        bindCommand("doBlockquote"));
-      buttons.code = makeButton("wmd-code-button", "code", "code",
-        bindCommand("doCode"));
-      buttons.image = makeButton("wmd-image-button", "image", "image2",
+      buttons.quote = makeButton("wmd-quote-button", "quote", bindCommand("doBlockquote"));
+      buttons.code = makeButton("wmd-code-button", "code", bindCommand("doCode"));
+      buttons.image = makeButton("wmd-image-button", "image",
         bindCommand(function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, true);
         })
       );
 
       makeSpacer(2);
-      buttons.olist = makeButton("wmd-olist-button", "olist", "list-numbered",
+      buttons.olist = makeButton("wmd-olist-button", "olist",
         bindCommand(function (chunk, postProcessing) {
           this.doList(chunk, postProcessing, true);
         }));
-      buttons.ulist = makeButton("wmd-ulist-button", "ulist", "list2",
+      buttons.ulist = makeButton("wmd-ulist-button", "ulist",
         bindCommand(function (chunk, postProcessing) {
           this.doList(chunk, postProcessing, false);
         }));
-      buttons.heading = makeButton("wmd-heading-button", "heading", "header",
-        bindCommand("doHeading"));
-      buttons.hr = makeButton("wmd-hr-button", "hr", "ruler",
-        bindCommand("doHorizontalRule"));
+      buttons.heading = makeButton("wmd-heading-button", "heading", bindCommand("doHeading"));
+      buttons.hr = makeButton("wmd-hr-button", "hr", bindCommand("doHorizontalRule"));
       makeSpacer(3);
-      buttons.undo = makeButton("wmd-undo-button", "undo", "undo", null);
+      buttons.undo = makeButton("wmd-undo-button", "undo", null);
       buttons.undo.execute = function (manager) {
         if (manager) {
           manager.undo();
@@ -689,15 +683,16 @@
       var redoTitle = /win/.test(nav.platform.toLowerCase()) ? getString("redo") :
         getString("redomac");
 
-      buttons.redo = makeButton("wmd-redo-button", redoTitle, "redo", null);
+      buttons.redo = makeButton("wmd-redo-button", redoTitle, null, "redo");
       buttons.redo.execute = function (manager) {
         if (manager) {
           manager.redo();
         }
       };
 
-      if (helpOptions) {
-        var helpButton = makeButton('wmd-help-button', 'help', 'question');
+      var helpOptions = options.helpButton;
+      if (helpOptions != null) {
+        var helpButton = makeButton('wmd-help-button', 'help');
         helpButton.style['margin-left'] = 'auto';
         helpButton.isHelp = true;
         helpButton.onclick = helpOptions.handler;
@@ -1088,7 +1083,7 @@
       var commandManager = new CommandManager(hooks, getString, markdownConverter);
       var previewManager = new PreviewManager(markdownConverter, panels, hooks);
       var uiManager = new UiManager(idPostfix, panels, previewManager, commandManager,
-        options.helpButton, getString, hooks);
+        options, getString, hooks);
 
       this.textOperation = function (f) {
         uiManager.setCommandMode();
