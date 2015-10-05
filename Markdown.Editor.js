@@ -680,8 +680,7 @@
         }
       };
 
-      var redoTitle = /win/.test(nav.platform.toLowerCase()) ? getString("redo") :
-        getString("redomac");
+      var redoTitle = /win/.test(nav.platform.toLowerCase()) ? "redo" : "redomac";
 
       buttons.redo = makeButton("wmd-redo-button", redoTitle, null, "redo");
       buttons.redo.execute = function (manager) {
