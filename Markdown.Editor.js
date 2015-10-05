@@ -626,11 +626,12 @@
       buttonRow.style.display = 'flex';
       buttonRow.style['align-items'] = 'center';
       buttonRow = buttonBar.appendChild(buttonRow);
+
       var makeButton = function (id, title, icon, textOp) {
         var button = document.createElement("span");
         button.className = "wmd-button icon-" + icon;
         button.id = id + postfix;
-        button.title = title;
+        button.title = getString(title);
         if (textOp) {
           button.textOp = textOp;
         }
@@ -645,49 +646,48 @@
         buttonRow.appendChild(spacer);
       };
 
-      buttons.bold = makeButton("wmd-bold-button", getString("bold"), "bold",
+      buttons.bold = makeButton("wmd-bold-button", "bold", "bold",
         bindCommand("doBold"));
-      buttons.italic = makeButton("wmd-italic-button", getString("italic"), "italic",
+      buttons.italic = makeButton("wmd-italic-button", "italic", "italic",
         bindCommand("doItalic"));
       makeSpacer(1);
-      buttons.link = makeButton("wmd-link-button", getString("link"), "link",
+      buttons.link = makeButton("wmd-link-button", "link", "link",
         bindCommand(function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, false);
         }));
-      buttons.quote = makeButton("wmd-quote-button", getString("quote"), "quotes-left",
+      buttons.quote = makeButton("wmd-quote-button", "quote", "quotes-left",
         bindCommand("doBlockquote"));
-      buttons.code = makeButton("wmd-code-button", getString("code"), "code",
+      buttons.code = makeButton("wmd-code-button", "code", "code",
         bindCommand("doCode"));
-      buttons.image = makeButton("wmd-image-button", getString("image"), "image2",
+      buttons.image = makeButton("wmd-image-button", "image", "image2",
         bindCommand(function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, true);
         })
       );
 
       makeSpacer(2);
-      buttons.olist = makeButton("wmd-olist-button", getString("olist"), "list-numbered",
+      buttons.olist = makeButton("wmd-olist-button", "olist", "list-numbered",
         bindCommand(function (chunk, postProcessing) {
           this.doList(chunk, postProcessing, true);
         }));
-      buttons.ulist = makeButton("wmd-ulist-button", getString("ulist"), "list2",
+      buttons.ulist = makeButton("wmd-ulist-button", "ulist", "list2",
         bindCommand(function (chunk, postProcessing) {
           this.doList(chunk, postProcessing, false);
         }));
-      buttons.heading = makeButton("wmd-heading-button", getString("heading"), "header",
+      buttons.heading = makeButton("wmd-heading-button", "heading", "header",
         bindCommand("doHeading"));
-      buttons.hr = makeButton("wmd-hr-button", getString("hr"), "ruler",
+      buttons.hr = makeButton("wmd-hr-button", "hr", "ruler",
         bindCommand("doHorizontalRule"));
       makeSpacer(3);
-      buttons.undo = makeButton("wmd-undo-button", getString("undo"), "undo", null);
+      buttons.undo = makeButton("wmd-undo-button", "undo", "undo", null);
       buttons.undo.execute = function (manager) {
         if (manager) {
           manager.undo();
         }
       };
 
-      var redoTitle = /win/.test(nav.platform.toLowerCase()) ?
-      getString("redo") :
-      getString("redomac"); // mac and other non-Windows platforms
+      var redoTitle = /win/.test(nav.platform.toLowerCase()) ? getString("redo") :
+        getString("redomac");
 
       buttons.redo = makeButton("wmd-redo-button", redoTitle, "redo", null);
       buttons.redo.execute = function (manager) {
@@ -697,19 +697,10 @@
       };
 
       if (helpOptions) {
-        var helpButton = document.createElement("li");
-        var helpButtonImage = document.createElement("span");
-        helpButton.appendChild(helpButtonImage);
-        helpButton.className = "wmd-button wmd-help-button";
-        helpButton.id = "wmd-help-button" + postfix;
+        var helpButton = makeButton('wmd-help-button', 'help', 'question');
+        helpButton.style['margin-left'] = 'auto';
         helpButton.isHelp = true;
-        helpButton.style.right = "0px";
-        helpButton.title = getString("help");
         helpButton.onclick = helpOptions.handler;
-
-        setupButton(helpButton, true);
-        buttonRow.appendChild(helpButton);
-        buttons.help = helpButton;
       }
 
       setUndoRedoButtonStates();
