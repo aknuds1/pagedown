@@ -54,8 +54,7 @@ if (typeof exports === "object" && typeof require === "function") {
   function identity(x) { return x; }
   function returnFalse() { return false; }
 
-  function HookCollection() { }
-
+  function HookCollection() {}
   HookCollection.prototype = {
     chain: function (hookname, func) {
       var original = this[hookname];
@@ -237,7 +236,6 @@ if (typeof exports === "object" && typeof require === "function") {
     _DoItalicsAndBold_AllowIntrawordWithAsterisk : _DoItalicsAndBoldStrict;
 
     this.makeHtml = function (text) {
-
       //
       // Main function. The order in which other subs are called here is
       // essential. Link and image substitutions need to happen before
@@ -497,7 +495,6 @@ if (typeof exports === "object" && typeof require === "function") {
     // These are all the transformations that form block-level
     // tags like paragraphs, headers, and list items.
     //
-
     text = pluginHooks.preBlockGamut(text, blockGamutHookCallback);
 
     text = _DoHeaders(text);
