@@ -3,20 +3,30 @@
 
 (function () {
   var util = {},
-  position = {},
-  ui = {},
-  doc = window.document,
-  re = window.RegExp,
-  nav = window.navigator,
-  SETTINGS = { lineLength: 72, },
+    position = {},
+    ui = {},
+    doc = window.document,
+    re = window.RegExp,
+    nav = window.navigator,
+    SETTINGS = { lineLength: 72, },
 
-  // Used to work around some browser bugs where we can't use feature testing.
-  uaSniffed = {
-    isIe: /msie/.test(nav.userAgent.toLowerCase()),
-    isIe5or6: /msie 6/.test(nav.userAgent.toLowerCase()) ||
-    /msie 5/.test(nav.userAgent.toLowerCase()),
-    isOpera: /opera/.test(nav.userAgent.toLowerCase()),
-  };
+    // Used to work around some browser bugs where we can't use feature testing.
+    uaSniffed = {
+      isIe: /msie/.test(nav.userAgent.toLowerCase()),
+      isIe5or6: /msie 6/.test(nav.userAgent.toLowerCase()) ||
+      /msie 5/.test(nav.userAgent.toLowerCase()),
+      isOpera: /opera/.test(nav.userAgent.toLowerCase()),
+    },
+    HookCollection,
+    output;
+  if (typeof exports === "object" && typeof require === "function") {
+    // we're in a CommonJS (e.g. Node.js) module
+    output = exports;
+    HookCollection = require("./Markdown.Converter").HookCollection;
+  } else {
+    output = Markdown;
+    HookCollection = Markdown.HookCollection;
+  }
 
   var defaultsStrings = {
     bold: "Strong <strong> Ctrl+B",
@@ -1038,7 +1048,7 @@
   // registered. Calling this more than once is a no-op.
   // - refreshPreview() forces the preview to be updated. This method is only available after
   // run() was called.
-  Markdown.Editor = function (markdownConverter, idPostfix, options) {
+  output.Editor = function (markdownConverter, idPostfix, options) {
     options = options || {};
 
     if (typeof options.handler === "function") { //backwards compatible behavior
@@ -1054,7 +1064,7 @@
 
     idPostfix = idPostfix || "";
 
-    var hooks = this.hooks = new Markdown.HookCollection();
+    var hooks = this.hooks = new HookCollection();
     // Called with no arguments after state has changed
     hooks.addNoop("onChange");
     // called with no arguments after the preview has been refreshed
