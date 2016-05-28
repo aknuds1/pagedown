@@ -1,10 +1,10 @@
 'use strict';
 (function () {
   var output, Converter;
-  if (typeof exports === "object" && typeof require === "function") {
+  if (typeof exports === 'object' && typeof require === 'function') {
     // we're in a CommonJS (e.g. Node.js) module
     output = exports;
-    Converter = require("./Markdown.Converter").Converter;
+    Converter = require('./Markdown.Converter').Converter;
   } else {
     output = Markdown;
     Converter = output.Converter;
@@ -55,7 +55,7 @@
     }
 
     var tagname, tag;
-    var ignoredtags = "<p><img><br><li><hr>";
+    var ignoredtags = '<p><img><br><li><hr>';
     var match;
     var tagpaired = [];
     var tagremove = [];
@@ -63,10 +63,10 @@
 
     // loop through matched tags in forward order
     for (var ctag = 0; ctag < tagcount; ctag++) {
-      tagname = tags[ctag].replace(/<\/?(\w+).*/, "$1");
+      tagname = tags[ctag].replace(/<\/?(\w+).*/, '$1');
       // skip any already paired tags
       // and skip tags in our ignore list; assume they're self-closed
-      if (tagpaired[ctag] || ignoredtags.search("<" + tagname + ">") > -1) {
+      if (tagpaired[ctag] || ignoredtags.search('<' + tagname + '>') > -1) {
         continue;
       }
 
@@ -77,7 +77,7 @@
         // this is an opening tag
         // search forwards (next tags), look for closing tags
         for (var ntag = ctag + 1; ntag < tagcount; ntag++) {
-          if (!tagpaired[ntag] && tags[ntag] === "</" + tagname + ">") {
+          if (!tagpaired[ntag] && tags[ntag] === '</' + tagname + '>') {
             match = ntag;
             break;
           }
@@ -107,8 +107,8 @@
 
   output.getSanitizingConverter = function () {
     var converter = new Converter();
-    converter.hooks.chain("postConversion", sanitizeHtml);
-    converter.hooks.chain("postConversion", balanceTags);
+    converter.hooks.chain('postConversion', sanitizeHtml);
+    converter.hooks.chain('postConversion', balanceTags);
     return converter;
   };
 })();

@@ -1,6 +1,6 @@
 'use strict';
 var Markdown;
-if (typeof exports === "object" && typeof require === "function") {
+if (typeof exports === 'object' && typeof require === 'function') {
   // we're in a CommonJS (e.g. Node.js) module
   Markdown = exports;
 } else {
@@ -60,7 +60,7 @@ if (typeof exports === "object" && typeof require === "function") {
     chain: function (hookname, func) {
       var original = this[hookname];
       if (!original) {
-        throw new Error("unknown hook " + hookname);
+        throw new Error('unknown hook ' + hookname);
       }
 
       if (original === identity) {
@@ -75,7 +75,7 @@ if (typeof exports === "object" && typeof require === "function") {
     },
     set: function (hookname, func) {
       if (!this[hookname]) {
-        throw new Error("unknown hook " + hookname);
+        throw new Error('unknown hook ' + hookname);
       }
       this[hookname] = func;
     },
@@ -99,10 +99,10 @@ if (typeof exports === "object" && typeof require === "function") {
   function SaveHash() { }
   SaveHash.prototype = {
     set: function (key, value) {
-      this["s_" + key] = value;
+      this['s_' + key] = value;
     },
     get: function (key) {
-      return this["s_" + key];
+      return this['s_' + key];
     },
   };
 
@@ -110,26 +110,26 @@ if (typeof exports === "object" && typeof require === "function") {
     var pluginHooks = this.hooks = new HookCollection();
 
     // given a URL that was encountered by itself (without markup), should return the link text that's to be given to this link
-    pluginHooks.addNoop("plainLinkText");
+    pluginHooks.addNoop('plainLinkText');
 
     // called with the orignal text as given to makeHtml. The result of this plugin hook is the actual markdown source that will be cooked
-    pluginHooks.addNoop("preConversion");
+    pluginHooks.addNoop('preConversion');
 
     // called with the text once all normalizations have been completed (tabs to spaces, line endings, etc.), but before any conversions have
-    pluginHooks.addNoop("postNormalization");
+    pluginHooks.addNoop('postNormalization');
 
     // Called with the text before / after creating block elements like code blocks and lists. Note that this is called recursively
     // with inner content, e.g. it's called with the full text, and then only with the content of a blockquote. The inner
     // call will receive outdented text.
-    pluginHooks.addNoop("preBlockGamut");
-    pluginHooks.addNoop("postBlockGamut");
+    pluginHooks.addNoop('preBlockGamut');
+    pluginHooks.addNoop('postBlockGamut');
 
     // called with the text of a single block element before / after the span-level conversions (bold, code spans, etc.) have been made
-    pluginHooks.addNoop("preSpanGamut");
-    pluginHooks.addNoop("postSpanGamut");
+    pluginHooks.addNoop('preSpanGamut');
+    pluginHooks.addNoop('postSpanGamut');
 
     // called with the final cooked HTML code. The result of this plugin hook is the actual output of makeHtml
-    pluginHooks.addNoop("postConversion");
+    pluginHooks.addNoop('postConversion');
 
     //
     // Private state of the converter instance:
@@ -187,15 +187,15 @@ if (typeof exports === "object" && typeof require === "function") {
       * */
       (function () {
         var lettersThatJavaScriptDoesNotKnowAndQ = /[Q\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376-\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0523\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0621-\u064a\u0660-\u0669\u066e-\u066f\u0671-\u06d3\u06d5\u06e5-\u06e6\u06ee-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07c0-\u07ea\u07f4-\u07f5\u07fa\u0904-\u0939\u093d\u0950\u0958-\u0961\u0966-\u096f\u0971-\u0972\u097b-\u097f\u0985-\u098c\u098f-\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc-\u09dd\u09df-\u09e1\u09e6-\u09f1\u0a05-\u0a0a\u0a0f-\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32-\u0a33\u0a35-\u0a36\u0a38-\u0a39\u0a59-\u0a5c\u0a5e\u0a66-\u0a6f\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2-\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0-\u0ae1\u0ae6-\u0aef\u0b05-\u0b0c\u0b0f-\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32-\u0b33\u0b35-\u0b39\u0b3d\u0b5c-\u0b5d\u0b5f-\u0b61\u0b66-\u0b6f\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99-\u0b9a\u0b9c\u0b9e-\u0b9f\u0ba3-\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0be6-\u0bef\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58-\u0c59\u0c60-\u0c61\u0c66-\u0c6f\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0-\u0ce1\u0ce6-\u0cef\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d28\u0d2a-\u0d39\u0d3d\u0d60-\u0d61\u0d66-\u0d6f\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32-\u0e33\u0e40-\u0e46\u0e50-\u0e59\u0e81-\u0e82\u0e84\u0e87-\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa-\u0eab\u0ead-\u0eb0\u0eb2-\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0ed0-\u0ed9\u0edc-\u0edd\u0f00\u0f20-\u0f29\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8b\u1000-\u102a\u103f-\u1049\u1050-\u1055\u105a-\u105d\u1061\u1065-\u1066\u106e-\u1070\u1075-\u1081\u108e\u1090-\u1099\u10a0-\u10c5\u10d0-\u10fa\u10fc\u1100-\u1159\u115f-\u11a2\u11a8-\u11f9\u1200-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u1676\u1681-\u169a\u16a0-\u16ea\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u17e0-\u17e9\u1810-\u1819\u1820-\u1877\u1880-\u18a8\u18aa\u1900-\u191c\u1946-\u196d\u1970-\u1974\u1980-\u19a9\u19c1-\u19c7\u19d0-\u19d9\u1a00-\u1a16\u1b05-\u1b33\u1b45-\u1b4b\u1b50-\u1b59\u1b83-\u1ba0\u1bae-\u1bb9\u1c00-\u1c23\u1c40-\u1c49\u1c4d-\u1c7d\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u203f-\u2040\u2054\u2071\u207f\u2090-\u2094\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2183-\u2184\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2c6f\u2c71-\u2c7d\u2c80-\u2ce4\u2d00-\u2d25\u2d30-\u2d65\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3006\u3031-\u3035\u303b-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31b7\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fc3\ua000-\ua48c\ua500-\ua60c\ua610-\ua62b\ua640-\ua65f\ua662-\ua66e\ua67f-\ua697\ua717-\ua71f\ua722-\ua788\ua78b-\ua78c\ua7fb-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8d0-\ua8d9\ua900-\ua925\ua930-\ua946\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa50-\uaa59\uac00-\ud7a3\uf900-\ufa2d\ufa30-\ufa6a\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40-\ufb41\ufb43-\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe33-\ufe34\ufe4d-\ufe4f\ufe70-\ufe74\ufe76-\ufefc\uff10-\uff19\uff21-\uff3a\uff3f\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc]/g;
-        var cp_Q = "Q".charCodeAt(0);
-        var cp_A = "A".charCodeAt(0);
-        var cp_Z = "Z".charCodeAt(0);
-        var dist_Za = "a".charCodeAt(0) - cp_Z - 1;
+        var cp_Q = 'Q'.charCodeAt(0);
+        var cp_A = 'A'.charCodeAt(0);
+        var cp_Z = 'Z'.charCodeAt(0);
+        var dist_Za = 'a'.charCodeAt(0) - cp_Z - 1;
 
         asciify = function(text) {
           return text.replace(lettersThatJavaScriptDoesNotKnowAndQ, function (m) {
             var c = m.charCodeAt(0);
-            var s = "";
+            var s = '';
             var v;
             while (c > 0) {
               v = (c % 51) + cp_A;
@@ -208,7 +208,7 @@ if (typeof exports === "object" && typeof require === "function") {
               s = String.fromCharCode(v) + s;
               c = c / 51 | 0;
             }
-            return "Q" + s + "Q";
+            return 'Q' + s + 'Q';
           });
         };
 
@@ -247,7 +247,7 @@ if (typeof exports === "object" && typeof require === "function") {
       // This will only happen if makeHtml on the same converter instance is called from a plugin hook.
       // Don't do that.
       if (g_urls) {
-        throw new Error("Recursive call to converter.makeHtml");
+        throw new Error('Recursive call to converter.makeHtml');
       }
 
       // Create the private state objects.
@@ -262,19 +262,19 @@ if (typeof exports === "object" && typeof require === "function") {
       // This lets us use tilde as an escape char to avoid md5 hashes
       // The choice of character is arbitray; anything that isn't
       // magic in Markdown will work.
-      text = text.replace(/~/g, "~T");
+      text = text.replace(/~/g, '~T');
 
       // attacklab: Replace $ with ~D
       // RegExp interprets $ as a special character
       // when it's in a replacement string
-      text = text.replace(/\$/g, "~D");
+      text = text.replace(/\$/g, '~D');
 
       // Standardize line endings
-      text = text.replace(/\r\n/g, "\n"); // DOS to Unix
-      text = text.replace(/\r/g, "\n"); // Mac to Unix
+      text = text.replace(/\r\n/g, '\n'); // DOS to Unix
+      text = text.replace(/\r/g, '\n'); // Mac to Unix
 
       // Make sure text begins and ends with a couple of newlines:
-      text = "\n\n" + text + "\n\n";
+      text = '\n\n' + text + '\n\n';
 
       // Convert all tabs to spaces.
       text = _Detab(text);
@@ -283,7 +283,7 @@ if (typeof exports === "object" && typeof require === "function") {
       // This makes subsequent regexen easier to write, because we can
       // match consecutive blank lines with /\n+/ instead of something
       // contorted like /[ \t]*\n+/ .
-      text = text.replace(/^[ \t]+$/mg, "");
+      text = text.replace(/^[ \t]+$/mg, '');
 
       text = pluginHooks.postNormalization(text);
 
@@ -298,10 +298,10 @@ if (typeof exports === "object" && typeof require === "function") {
       text = unescapeSpecialChars(text);
 
       // attacklab: Restore dollar signs
-      text = text.replace(/~D/g, "$$");
+      text = text.replace(/~D/g, '$$');
 
       // attacklab: Restore tildes
-      text = text.replace(/~T/g, "~");
+      text = text.replace(/~T/g, '~');
 
       text = pluginHooks.postConversion(text);
 
@@ -350,11 +350,11 @@ if (typeof exports === "object" && typeof require === "function") {
         // Put back the parenthetical statement we stole.
         return m3 + m6;
       } else if (m5) {
-        g_titles.set(m1, m5.replace(/"/g, "&quot;"));
+        g_titles.set(m1, m5.replace(/'/g, '&quot;'));
       }
 
       // Completely remove the definition from the text
-      return "";
+      return '';
     }
     );
 
@@ -480,9 +480,9 @@ if (typeof exports === "object" && typeof require === "function") {
   }
 
   function hashBlock(text) {
-    text = text.replace(/(^\n+|\n+$)/g, "");
+    text = text.replace(/(^\n+|\n+$)/g, '');
     // Replace the element text with a marker ("~KxK" where x is its key)
-    return "\n\n~K" + (g_html_blocks.push(text) - 1) + "K\n\n";
+    return '\n\n~K' + (g_html_blocks.push(text) - 1) + 'K\n\n';
   }
 
   function hashMatch(wholeMatch, m1) {
@@ -501,7 +501,7 @@ if (typeof exports === "object" && typeof require === "function") {
     text = _DoHeaders(text);
 
     // Do Horizontal Rules:
-    var replacement = "<hr />\n";
+    var replacement = '<hr />\n';
     text = text.replace(/^[ ]{0,2}([ ]?\*[ ]?){3,}[ \t]*$/gm, replacement);
     text = text.replace(/^[ ]{0,2}([ ]?-[ ]?){3,}[ \t]*$/gm, replacement);
     text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, replacement);
@@ -545,13 +545,13 @@ if (typeof exports === "object" && typeof require === "function") {
     // delimiters in inline links like [this](<url>).
     text = _DoAutoLinks(text);
 
-    text = text.replace(/~P/g, "://"); // put in place to prevent autolinking; reset now
+    text = text.replace(/~P/g, '://'); // put in place to prevent autolinking; reset now
 
     text = _EncodeAmpsAndAngles(text);
     text = _DoItalicsAndBold(text);
 
     // Do hard breaks:
-    text = text.replace(/  +\n/g, " <br>\n");
+    text = text.replace(/  +\n/g, ' <br>\n');
 
     text = pluginHooks.postSpanGamut(text);
 
@@ -572,9 +572,9 @@ if (typeof exports === "object" && typeof require === "function") {
     var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>|<!(--(?:|(?:[^>-]|-[^>])(?:[^-]|-[^-])*)--)>)/gi;
 
     text = text.replace(regex, function (wholeMatch) {
-      var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, "$1`");
+      var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, '$1`');
       // also escape slashes in comments to prevent autolinking there -- http://meta.stackexchange.com/questions/95987
-      tag = escapeCharacters(tag, wholeMatch.charAt(1) === "!" ? "\\`*_/" : "\\`*_");
+      tag = escapeCharacters(tag, wholeMatch.charAt(1) === '!' ? '\\`*_/' : '\\`*_');
       return tag;
     });
 
@@ -582,7 +582,7 @@ if (typeof exports === "object" && typeof require === "function") {
   }
 
   function _DoAnchors(text) {
-    if (text.indexOf("[") === -1) {
+    if (text.indexOf('[') === -1) {
       return text;
     }
 
@@ -681,20 +681,20 @@ if (typeof exports === "object" && typeof require === "function") {
 
   function writeAnchorTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
     if (m7 == null) {
-      m7 = "";
+      m7 = '';
     }
     var whole_match = m1;
-    var link_text = m2.replace(/:\/\//g, "~P"); // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
+    var link_text = m2.replace(/:\/\//g, '~P'); // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
     var link_id = m3.toLowerCase();
     var url = m4;
     var title = m7;
 
-    if (url === "") {
-      if (link_id === "") {
+    if (url === '') {
+      if (link_id === '') {
         // lower-case and turn embedded newlines into spaces
-        link_id = link_text.toLowerCase().replace(/ ?\n/g, " ");
+        link_id = link_text.toLowerCase().replace(/ ?\n/g, ' ');
       }
-      url = "#" + link_id;
+      url = '#' + link_id;
 
       if (g_urls.get(link_id) != null) {
         url = g_urls.get(link_id);
@@ -705,7 +705,7 @@ if (typeof exports === "object" && typeof require === "function") {
       else {
         if (whole_match.search(/\(\s*\)$/m) > -1) {
           // Special case for explicit empty url
-          url = "";
+          url = '';
         } else {
           return whole_match;
         }
@@ -713,21 +713,21 @@ if (typeof exports === "object" && typeof require === "function") {
     }
     url = attributeSafeUrl(url);
 
-    var result = "<a href=\"" + url + "\"";
+    var result = '<a href=\"' + url + '\"';
 
-    if (title !== "") {
+    if (title !== '') {
       title = attributeEncode(title);
-      title = escapeCharacters(title, "*_");
-      result += " title=\"" + title + "\"";
+      title = escapeCharacters(title, '*_');
+      result += ' title=\"' + title + '\"';
     }
 
-    result += ">" + link_text + "</a>";
+    result += '>' + link_text + '</a>';
 
     return result;
   }
 
   function _DoImages(text) {
-    if (text.indexOf("![") === -1) {
+    if (text.indexOf('![') === -1) {
       return text;
     }
 
@@ -792,7 +792,7 @@ if (typeof exports === "object" && typeof require === "function") {
   function attributeEncode(text) {
     // unconditionally replace angle brackets here -- what ends up in an attribute (e.g. alt or title)
     // never makes sense to have verbatim HTML in it (and the sanitizer would totally break it)
-    return text.replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    return text.replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function writeImageTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
@@ -803,15 +803,15 @@ if (typeof exports === "object" && typeof require === "function") {
     var title = m7;
 
     if (!title) {
-      title = "";
+      title = '';
     }
 
-    if (url === "") {
-      if (link_id === "") {
+    if (url === '') {
+      if (link_id === '') {
         // lower-case and turn embedded newlines into spaces
-        link_id = alt_text.toLowerCase().replace(/ ?\n/g, " ");
+        link_id = alt_text.toLowerCase().replace(/ ?\n/g, ' ');
       }
-      url = "#" + link_id;
+      url = '#' + link_id;
 
       if (g_urls.get(link_id) != null) {
         url = g_urls.get(link_id);
@@ -824,20 +824,20 @@ if (typeof exports === "object" && typeof require === "function") {
       }
     }
 
-    alt_text = escapeCharacters(attributeEncode(alt_text), "*_[]()");
-    url = escapeCharacters(url, "*_");
-    var result = "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
+    alt_text = escapeCharacters(attributeEncode(alt_text), '*_[]()');
+    url = escapeCharacters(url, '*_');
+    var result = '<img src=\"' + url + '\" alt=\"' + alt_text + '\"';
 
     // attacklab: Markdown.pl adds empty title attributes to images.
     // Replicate this bug.
 
-    //if (title != "") {
+    //if (title != '') {
     title = attributeEncode(title);
-    title = escapeCharacters(title, "*_");
-    result += " title=\"" + title + "\"";
+    title = escapeCharacters(title, '*_');
+    result += ' title=\"' + title + '\"';
     //}
 
-    result += " />";
+    result += ' />';
 
     return result;
   }
@@ -852,11 +852,11 @@ if (typeof exports === "object" && typeof require === "function") {
     //  --------
     //
     text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-    function (wholeMatch, m1) { return "<h1>" + _RunSpanGamut(m1) + "</h1>\n\n"; }
+    function (wholeMatch, m1) { return '<h1>' + _RunSpanGamut(m1) + '</h1>\n\n'; }
   );
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-  function (matchFound, m1) { return "<h2>" + _RunSpanGamut(m1) + "</h2>\n\n"; }
+  function (matchFound, m1) { return '<h2>' + _RunSpanGamut(m1) + '</h2>\n\n'; }
   );
 
   // atx-style headers:
@@ -881,7 +881,7 @@ if (typeof exports === "object" && typeof require === "function") {
   text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
   function (wholeMatch, m1, m2) {
     var h_level = m1.length;
-    return "<h" + h_level + ">" + _RunSpanGamut(m2) + "</h" + h_level + ">\n\n";
+    return '<h' + h_level + '>' + _RunSpanGamut(m2) + '</h' + h_level + '>\n\n';
   }
   );
 
@@ -895,7 +895,7 @@ if (typeof exports === "object" && typeof require === "function") {
 
     // attacklab: add sentinel to hack around khtml/safari bug:
     // http://bugs.webkit.org/show_bug.cgi?id=11231
-    text += "~0";
+    text += '~0';
 
     // Re-usable pattern to match any entirel ul or ol list:
 
@@ -925,9 +925,9 @@ if (typeof exports === "object" && typeof require === "function") {
   if (g_list_level) {
     text = text.replace(whole_list, function (wholeMatch, m1, m2) {
       var list = m1;
-      var list_type = (m2.search(/[*+-]/g) > -1) ? "ul" : "ol";
+      var list_type = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
       var first_number;
-      if (list_type === "ol") {
+      if (list_type === 'ol') {
         first_number = parseInt(m2, 10);
       }
 
@@ -937,12 +937,12 @@ if (typeof exports === "object" && typeof require === "function") {
       // up on the preceding line, to get it past the current stupid
       // HTML block parser. This is a hack to work around the terrible
       // hack that is the HTML block parser.
-      result = result.replace(/\s+$/, "");
-      var opening = "<" + list_type;
+      result = result.replace(/\s+$/, '');
+      var opening = '<' + list_type;
       if (first_number && first_number !== 1) {
-        opening += " start=\"" + first_number + "\"";
+        opening += ' start=\"' + first_number + '\"';
       }
-      result = opening + ">" + result + "</" + list_type + ">\n";
+      result = opening + '>' + result + '</' + list_type + '>\n';
       return result;
     });
   } else {
@@ -951,30 +951,30 @@ if (typeof exports === "object" && typeof require === "function") {
       var runup = m1;
       var list = m2;
 
-      var list_type = (m3.search(/[*+-]/g) > -1) ? "ul" : "ol";
+      var list_type = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
 
       var first_number;
-      if (list_type === "ol") {
+      if (list_type === 'ol') {
         first_number = parseInt(m3, 10);
       }
 
       var result = _ProcessListItems(list, list_type);
-      var opening = "<" + list_type;
+      var opening = '<' + list_type;
       if (first_number && first_number !== 1)
-      opening += " start=\"" + first_number + "\"";
+      opening += ' start=\"' + first_number + '\"';
 
-      result = runup + opening + ">\n" + result + "</" + list_type + ">\n";
+      result = runup + opening + '>\n' + result + '</' + list_type + '>\n';
       return result;
     });
   }
 
   // attacklab: strip sentinel
-  text = text.replace(/~0/, "");
+  text = text.replace(/~0/, '');
 
   return text;
   }
 
-  var _listItemMarkers = { ol: "\\d+[.]", ul: "[*+-]", };
+  var _listItemMarkers = { ol: '\\d+[.]', ul: '[*+-]', };
 
   function _ProcessListItems(list_str, list_type) {
     //
@@ -1007,10 +1007,10 @@ if (typeof exports === "object" && typeof require === "function") {
     g_list_level++;
 
     // trim trailing blank lines:
-    list_str = list_str.replace(/\n{2,}$/, "\n");
+    list_str = list_str.replace(/\n{2,}$/, '\n');
 
     // attacklab: add sentinel to emulate \z
-    list_str += "~0";
+    list_str += '~0';
 
     // In the original attacklab showdown, list_type was not given to this function, and anything
     // that matched /[*+-]|\d+[.]/ would just create the next <li>, causing this mismatch:
@@ -1038,7 +1038,7 @@ if (typeof exports === "object" && typeof require === "function") {
   */
 
   var marker = _listItemMarkers[list_type];
-  var re = new RegExp("(^[ \\t]*)(" + marker + ")[ \\t]+([^\\r]+?(\\n+))(?=(~0|\\1(" + marker + ")[ \\t]+))", "gm");
+  var re = new RegExp('(^[ \\t]*)(' + marker + ')[ \\t]+([^\\r]+?(\\n+))(?=(~0|\\1(' + marker + ')[ \\t]+))', 'gm');
   var last_item_had_a_double_newline = false;
   list_str = list_str.replace(re,
     function (wholeMatch, m1, m2, m3) {
@@ -1051,12 +1051,12 @@ if (typeof exports === "object" && typeof require === "function") {
       /* doNotCreateParagraphs = */ !loose);
 
       last_item_had_a_double_newline = ends_with_double_newline;
-      return "<li>" + item + "</li>\n";
+      return '<li>' + item + '</li>\n';
     }
   );
 
   // attacklab: strip sentinel
-  list_str = list_str.replace(/~0/g, "");
+  list_str = list_str.replace(/~0/g, '');
 
   g_list_level--;
   return list_str;
@@ -1081,7 +1081,7 @@ if (typeof exports === "object" && typeof require === "function") {
   */
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
-  text += "~0";
+  text += '~0';
 
   text = text.replace(/(?:\n\n|^\n?)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g,
   function (wholeMatch, m1, m2) {
@@ -1090,17 +1090,17 @@ if (typeof exports === "object" && typeof require === "function") {
 
     codeblock = _EncodeCode(_Outdent(codeblock));
     codeblock = _Detab(codeblock);
-    codeblock = codeblock.replace(/^\n+/g, ""); // trim leading newlines
-    codeblock = codeblock.replace(/\n+$/g, ""); // trim trailing whitespace
+    codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
+    codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 
-    codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+    codeblock = '<pre><code>' + codeblock + '\n</code></pre>';
 
-    return "\n\n" + codeblock + "\n\n" + nextChar;
+    return '\n\n' + codeblock + '\n\n' + nextChar;
   }
   );
 
   // attacklab: strip sentinel
-  text = text.replace(/~0/, "");
+  text = text.replace(/~0/, '');
 
   return text;
   }
@@ -1148,11 +1148,11 @@ if (typeof exports === "object" && typeof require === "function") {
   text = text.replace(/(^|[^\\`])(`+)(?!`)([^\r]*?[^`])\2(?!`)/gm,
   function (wholeMatch, m1, m2, m3, m4) {
     var c = m3;
-    c = c.replace(/^([ \t]*)/g, ""); // leading whitespace
-    c = c.replace(/[ \t]*$/g, ""); // trailing whitespace
+    c = c.replace(/^([ \t]*)/g, ''); // leading whitespace
+    c = c.replace(/[ \t]*$/g, ''); // trailing whitespace
     c = _EncodeCode(c);
-    c = c.replace(/:\/\//g, "~P"); // to prevent auto-linking. Not necessary in code *blocks*, but in code spans. Will be converted back after the auto-linker runs.
-    return m1 + "<code>" + c + "</code>";
+    c = c.replace(/:\/\//g, '~P'); // to prevent auto-linking. Not necessary in code *blocks*, but in code spans. Will be converted back after the auto-linker runs.
+    return m1 + '<code>' + c + '</code>';
   }
   );
 
@@ -1167,14 +1167,14 @@ if (typeof exports === "object" && typeof require === "function") {
     //
     // Encode all ampersands; HTML entities are not
     // entities within a Markdown code span.
-    text = text.replace(/&/g, "&amp;");
+    text = text.replace(/&/g, '&amp;');
 
     // Do the angle bracket song and dance:
-    text = text.replace(/</g, "&lt;");
-    text = text.replace(/>/g, "&gt;");
+    text = text.replace(/</g, '&lt;');
+    text = text.replace(/>/g, '&gt;');
 
     // Now, escape characters that are magic in Markdown:
-    text = escapeCharacters(text, "\*_{}[]\\", false);
+    text = escapeCharacters(text, '\*_{}[]\\', false);
 
     // jj the line above breaks this:
     //---
@@ -1191,7 +1191,7 @@ if (typeof exports === "object" && typeof require === "function") {
 
   function _DoItalicsAndBoldStrict(text) {
 
-    if (text.indexOf("*") === -1 && text.indexOf("_") === - 1)
+    if (text.indexOf('*') === -1 && text.indexOf('_') === - 1)
     return text;
 
     text = asciify(text);
@@ -1218,19 +1218,19 @@ if (typeof exports === "object" && typeof require === "function") {
     //                     rightmost two in a longer row)...
     // (?=[\W_]|$)         ...but by any other non-word character or the end of string.
     text = text.replace(/(^|[\W_])(?:(?!\1)|(?=^))(\*|_)\2(?=\S)([^\r]*?\S)\2\2(?!\2)(?=[\W_]|$)/g,
-    "$1<strong>$3</strong>");
+    '$1<strong>$3</strong>');
 
     // This is almost identical to the <strong> regex, except 1) there's obviously just one marker
     // character, and 2) the italicized string cannot contain the marker character.
     text = text.replace(/(^|[\W_])(?:(?!\1)|(?=^))(\*|_)(?=\S)((?:(?!\2)[^\r])*?\S)\2(?!\2)(?=[\W_]|$)/g,
-    "$1<em>$3</em>");
+    '$1<em>$3</em>');
 
     return deasciify(text);
   }
 
   function _DoItalicsAndBold_AllowIntrawordWithAsterisk(text) {
 
-    if (text.indexOf("*") === -1 && text.indexOf("_") === - 1) {
+    if (text.indexOf('*') === -1 && text.indexOf('_') === - 1) {
       return text;
     }
 
@@ -1277,7 +1277,7 @@ if (typeof exports === "object" && typeof require === "function") {
     // \2                               actually capture the closing delimiter (and make sure that it matches the opening one)
 
     text = text.replace(/(?=[^\r][*_]|[*_])(^|(?=\W__|(?!\*)[\W_]\*\*|\w\*\*\w)[^\r])(\*\*|__)(?!\2)(?=\S)((?:|[^\r]*?(?!\2)[^\r])(?=\S_|\w|\S\*\*(?:[\W_]|$)).)(?=__(?:\W|$)|\*\*(?:[^*]|$))\2/g,
-    "$1<strong>$3</strong>");
+    '$1<strong>$3</strong>');
 
     // now <em>:
     // (?=[^\r][*_]|[*_])               Optimization, see above.
@@ -1320,7 +1320,7 @@ if (typeof exports === "object" && typeof require === "function") {
     // \2                               actually capture the closing delimiter (and make sure that it matches the opening one)
 
     text = text.replace(/(?=[^\r][*_]|[*_])(^|(?=\W_|(?!\*)(?:[\W_]\*|\D\*(?=\w)\D))[^\r])(\*|_)(?!\2\2\2)(?=\S)((?:(?!\2)[^\r])*?(?=[^\s_]_|(?=\w)\D\*\D|[^\s*]\*(?:[\W_]|$)).)(?=_(?:\W|$)|\*(?:[^*]|$))\2/g,
-    "$1<em>$3</em>");
+    '$1<em>$3</em>');
 
     return deasciify(text);
   }
@@ -1348,27 +1348,27 @@ if (typeof exports === "object" && typeof require === "function") {
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
 
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, "~0"); // trim one level of quoting
+    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '~0'); // trim one level of quoting
 
     // attacklab: clean up hack
-    bq = bq.replace(/~0/g, "");
+    bq = bq.replace(/~0/g, '');
 
-    bq = bq.replace(/^[ \t]+$/gm, "");     // trim whitespace-only lines
+    bq = bq.replace(/^[ \t]+$/gm, '');     // trim whitespace-only lines
     bq = _RunBlockGamut(bq);             // recurse
 
-    bq = bq.replace(/(^|\n)/g, "$1  ");
+    bq = bq.replace(/(^|\n)/g, '$1  ');
     // These leading spaces screw with <pre> content, so we need to fix that:
     bq = bq.replace(
       /(\s*<pre>[^\r]+?<\/pre>)/gm,
       function (wholeMatch, m1) {
         var pre = m1;
         // attacklab: hack around Konqueror 3.5.4 bug:
-        pre = pre.replace(/^  /mg, "~0");
-        pre = pre.replace(/~0/g, "");
+        pre = pre.replace(/^  /mg, '~0');
+        pre = pre.replace(/~0/g, '');
         return pre;
       });
 
-      return hashBlock("<blockquote>\n" + bq + "\n</blockquote>");
+      return hashBlock('<blockquote>\n' + bq + '\n</blockquote>');
     }
   );
   return text;
@@ -1381,8 +1381,8 @@ if (typeof exports === "object" && typeof require === "function") {
     //
 
     // Strip leading and trailing lines:
-    text = text.replace(/^\n+/g, "");
-    text = text.replace(/\n+$/g, "");
+    text = text.replace(/^\n+/g, '');
+    text = text.replace(/\n+$/g, '');
 
     var grafs = text.split(/\n{2,}/g);
     var grafsOut = [];
@@ -1402,9 +1402,9 @@ if (typeof exports === "object" && typeof require === "function") {
       }
       else if (/\S/.test(str)) {
         str = _RunSpanGamut(str);
-        str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? "" : "<p>");
+        str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? '' : '<p>');
         if (!doNotCreateParagraphs) {
-          str += "</p>";
+          str += '</p>';
         }
         grafsOut.push(str);
       }
@@ -1426,7 +1426,7 @@ if (typeof exports === "object" && typeof require === "function") {
         }
       }
     }
-    return grafsOut.join("\n\n");
+    return grafsOut.join('\n\n');
   }
 
   function _EncodeAmpsAndAngles(text) {
@@ -1434,10 +1434,10 @@ if (typeof exports === "object" && typeof require === "function") {
 
     // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
     //   http://bumppo.net/projects/amputator/
-    text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, "&amp;");
+    text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
 
     // Encode naked <'s
-    text = text.replace(/<(?![a-z\/?!]|~D)/gi, "&lt;");
+    text = text.replace(/<(?![a-z\/?!]|~D)/gi, '&lt;');
 
     return text;
   }
@@ -1452,8 +1452,8 @@ if (typeof exports === "object" && typeof require === "function") {
       // attacklab: The polite way to do this is with the new
       // escapeCharacters() function:
       //
-      //     text = escapeCharacters(text,"\\",true);
-      //     text = escapeCharacters(text,"`*_{}[]()>#+-.!",true);
+      //     text = escapeCharacters(text,'\\',true);
+      //     text = escapeCharacters(text,'`*_{}[]()>#+-.!',true);
       //
       // ...but we're sidestepping its use of the (slow) RegExp constructor
       // as an optimization for Firefox.  This function gets called a LOT.
@@ -1463,22 +1463,22 @@ if (typeof exports === "object" && typeof require === "function") {
       return text;
     }
 
-    var charInsideUrl = "[-A-Z0-9+&@#/%?=~_|[\\]()!:,.;]",
-    charEndingUrl = "[-A-Z0-9+&@#/%=~_|[\\])]",
-    autoLinkRegex = new RegExp("(=\"|<)?\\b(https?|ftp)(://" + charInsideUrl + "*" + charEndingUrl + ")(?=$|\\W)", "gi"),
-    endCharRegex = new RegExp(charEndingUrl, "i");
+    var charInsideUrl = '[-A-Z0-9+&@#/%?=~_|[\\]()!:,.;]',
+    charEndingUrl = '[-A-Z0-9+&@#/%=~_|[\\])]',
+    autoLinkRegex = new RegExp('(=\"|<)?\\b(https?|ftp)(://' + charInsideUrl + '*' + charEndingUrl + ')(?=$|\\W)', 'gi'),
+    endCharRegex = new RegExp(charEndingUrl, 'i');
 
     function handleTrailingParens(wholeMatch, lookbehind, protocol, link) {
       if (lookbehind) {
         return wholeMatch;
       }
-      if (link.charAt(link.length - 1) !== ")") {
-        return "<" + protocol + link + ">";
+      if (link.charAt(link.length - 1) !== ')') {
+        return '<' + protocol + link + '>';
       }
       var parens = link.match(/[()]/g);
       var level = 0;
       for (var i = 0; i < parens.length; i++) {
-        if (parens[i] === "(") {
+        if (parens[i] === '(') {
           if (level <= 0) {
             level = 1;
           } else {
@@ -1489,12 +1489,12 @@ if (typeof exports === "object" && typeof require === "function") {
           --level;
         }
       }
-      var tail = "";
+      var tail = '';
       if (level < 0) {
-        var re = new RegExp("\\){1," + (-level) + "}$");
+        var re = new RegExp('\\){1,' + (-level) + '}$');
         link = link.replace(re, function (trailingParens) {
           tail = trailingParens;
-          return "";
+          return '';
         });
       }
       if (tail) {
@@ -1504,11 +1504,11 @@ if (typeof exports === "object" && typeof require === "function") {
           link = link.substr(0, link.length - 1);
         }
       }
-      return "<" + protocol + link + ">" + tail;
+      return '<' + protocol + link + '>' + tail;
     }
 
     function _DoAutoLinks(text) {
-      // note that at this point, all other URL in the text are already hyperlinked as <a href=""></a>
+      // note that at this point, all other URL in the text are already hyperlinked as <a href=''></a>
       // *except* for the <http://www.foo.com> case
 
       // automatically add < and > around unadorned raw hyperlinks
@@ -1523,7 +1523,7 @@ if (typeof exports === "object" && typeof require === "function") {
       var replacer = function (wholematch, m1) {
         var url = attributeSafeUrl(m1);
 
-        return "<a href=\"" + url + "\">" + pluginHooks.plainLinkText(m1) + "</a>";
+        return '<a href=\"' + url + '\">' + pluginHooks.plainLinkText(m1) + '</a>';
       };
       text = text.replace(/<((https?|ftp):[^'">\s]+)>/gi, replacer);
 
@@ -1572,7 +1572,7 @@ if (typeof exports === "object" && typeof require === "function") {
       // attacklab: hack around Konqueror 3.5.4 bug:
       // "----------bug".replace(/^-/g,"") == "bug"
 
-      text = text.replace(/^(\t|[ ]{1,4})/gm, "~0"); // attacklab: g_tab_width
+      text = text.replace(/^(\t|[ ]{1,4})/gm, '~0'); // attacklab: g_tab_width
 
       // attacklab: clean up hack
       text = text.replace(/~0/g, '');
@@ -1585,12 +1585,12 @@ if (typeof exports === "object" && typeof require === "function") {
         return text;
       }
 
-      var spaces = ["    ", "   ", "  ", " ", ],
+      var spaces = ['    ', '   ', '  ', ' ', ],
       skew = 0,
       v;
 
       return text.replace(/[\n\t]/g, function (match, offset) {
-        if (match === "\n") {
+        if (match === '\n') {
           skew = offset + 1;
           return match;
         }
@@ -1606,20 +1606,20 @@ if (typeof exports === "object" && typeof require === "function") {
 
     function attributeSafeUrl(url) {
       url = attributeEncode(url);
-      url = escapeCharacters(url, "*_:()[]");
+      url = escapeCharacters(url, '*_:()[]');
       return url;
     }
 
     function escapeCharacters(text, charsToEscape, afterBackslash) {
       // First we have to escape the escape characters so that
       // we can build a character class out of them
-      var regexString = "([" + charsToEscape.replace(/([\[\]\\])/g, "\\$1") + "])";
+      var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
 
       if (afterBackslash) {
-        regexString = "\\\\" + regexString;
+        regexString = '\\\\' + regexString;
       }
 
-      var regex = new RegExp(regexString, "g");
+      var regex = new RegExp(regexString, 'g');
       text = text.replace(regex, escapeCharactersCallback);
 
       return text;
@@ -1627,7 +1627,7 @@ if (typeof exports === "object" && typeof require === "function") {
 
     function escapeCharactersCallback(wholeMatch, m1) {
       var charCodeToEscape = m1.charCodeAt(0);
-      return "~E" + charCodeToEscape + "E";
+      return '~E' + charCodeToEscape + 'E';
     }
   }; // end of the Markdown.Converter constructor
 })();
