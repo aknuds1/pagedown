@@ -536,6 +536,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
     text = _EncodeBackslashEscapes(text);
 
     text = _DoYoutube(text);
+    text = _DoVimeo(text);
     // Process anchor and image tags. Images must come first,
     // because ![foo][f] looks like an anchor.
     text = _DoImages(text);
@@ -735,6 +736,22 @@ if (typeof exports === 'object' && typeof require === 'function') {
     text = text.replace(/\[!youtube\]\s?\([ \t]*(\S+)[ \t]*\)/g, function (wholeMatch, videoId) {
       var result = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' +
         videoId + '" frameborder="0" allowfullscreen></iframe>'
+      return result;
+    });
+    return text;
+  }
+
+  function _DoVimeo(text) {
+    if (text.indexOf('[!vimeo]') === -1) {
+      return text;
+    }
+
+    text = text.replace(/\[!vimeo\]\s?\([ \t]*(\S+)[ \t]*\)/g, function (wholeMatch, videoId) {
+      var result = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' +
+        videoId + '" frameborder="0" allowfullscreen></iframe>'
+      var result = '<iframe src="https://player.vimeo.com/video/' + videoId +
+        '?color=ffffff" width="640" height="360" frameborder="0" webkitallowfullscreen ' +
+        'mozallowfullscreen allowfullscreen></iframe>';
       return result;
     });
     return text
