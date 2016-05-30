@@ -537,6 +537,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
 
     text = _DoYoutube(text);
     text = _DoVimeo(text);
+    text = _DoSoundCloud(text);
     // Process anchor and image tags. Images must come first,
     // because ![foo][f] looks like an anchor.
     text = _DoImages(text);
@@ -752,6 +753,21 @@ if (typeof exports === 'object' && typeof require === 'function') {
       var result = '<iframe src="https://player.vimeo.com/video/' + videoId +
         '?color=ffffff" width="640" height="360" frameborder="0" webkitallowfullscreen ' +
         'mozallowfullscreen allowfullscreen></iframe>';
+      return result;
+    });
+    return text
+  }
+
+  function _DoSoundCloud(text) {
+    if (text.indexOf('[!soundcloud]') === -1) {
+      return text;
+    }
+
+    text = text.replace(/\[!soundcloud\]\s?\([ \t]*(\S+)[ \t]*\)/g, function (wholeMatch, trackId) {
+      var result = '<iframe width="100%" height="450" scrolling="no" frameborder="no" ' +
+        'src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/' +
+        '122498414&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;' +
+        'show_user=true&amp;show_reposts=false&amp;visual=true"></iframe>'
       return result;
     });
     return text
