@@ -341,22 +341,22 @@ if (typeof exports === 'object' && typeof require === 'function') {
     /gm, function(){...});
     */
 
-    text = text.replace(/^[ ]{0,3}\[([^\[\]]+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?(?=\s|$)[ \t]*\n?[ \t]*((\n*)["(](.+?)[")][ \t]*)?(\n+)/gm,
-    function (wholeMatch, m1, m2, m3, m4, m5, m6) {
-      m1 = m1.toLowerCase();
-      g_urls.set(m1, _EncodeAmpsAndAngles(m2));  // Link IDs are case-insensitive
-      if (m4) {
-        // Oops, found blank lines, so it's not a title.
-        // Put back the parenthetical statement we stole.
-        return m3 + m6;
-      } else if (m5) {
-        g_titles.set(m1, m5.replace(/'/g, '&quot;'));
-      }
+    text = text.replace(
+      /^[ ]{0,3}\[([^\[\]]+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?(?=\s|$)[ \t]*\n?[ \t]*((\n*)["(](.+?)[")][ \t]*)?(\n+)/gm,
+      function (wholeMatch, m1, m2, m3, m4, m5, m6) {
+        m1 = m1.toLowerCase();
+        g_urls.set(m1, _EncodeAmpsAndAngles(m2));  // Link IDs are case-insensitive
+        if (m4) {
+          // Oops, found blank lines, so it's not a title.
+          // Put back the parenthetical statement we stole.
+          return m3 + m6;
+        } else if (m5) {
+          g_titles.set(m1, m5.replace(/'/g, '&quot;'));
+        }
 
-      // Completely remove the definition from the text
-      return '';
-    }
-    );
+        // Completely remove the definition from the text
+        return '';
+      });
 
     return text;
   }
@@ -843,7 +843,6 @@ if (typeof exports === 'object' && typeof require === 'function') {
   }
 
   function _DoHeaders(text) {
-
     // Setext-style headers:
     //  Header 1
     //  ========
@@ -852,40 +851,37 @@ if (typeof exports === 'object' && typeof require === 'function') {
     //  --------
     //
     text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-    function (wholeMatch, m1) { return '<h1>' + _RunSpanGamut(m1) + '</h1>\n\n'; }
-  );
+      function (wholeMatch, m1) { return '<h1>' + _RunSpanGamut(m1) + '</h1>\n\n'; });
 
-  text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-  function (matchFound, m1) { return '<h2>' + _RunSpanGamut(m1) + '</h2>\n\n'; }
-  );
+    text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
+      function (matchFound, m1) { return '<h2>' + _RunSpanGamut(m1) + '</h2>\n\n'; });
 
-  // atx-style headers:
-  //  # Header 1
-  //  ## Header 2
-  //  ## Header 2 with closing hashes ##
-  //  ...
-  //  ###### Header 6
-  //
+    // atx-style headers:
+    //  # Header 1
+    //  ## Header 2
+    //  ## Header 2 with closing hashes ##
+    //  ...
+    //  ###### Header 6
+    //
 
-  /*
-  text = text.replace(/
-  ^(\#{1,6})      // $1 = string of #'s
-  [ \t]*
-  (.+?)           // $2 = Header text
-  [ \t]*
-  \#*             // optional closing #'s (not counted)
-  \n+
-  /gm, function() {...});
-  */
+    /*
+    text = text.replace(/
+    ^(\#{1,6})      // $1 = string of #'s
+    [ \t]*
+    (.+?)           // $2 = Header text
+    [ \t]*
+    \#*             // optional closing #'s (not counted)
+    \n+
+    /gm, function() {...});
+    */
 
-  text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
-  function (wholeMatch, m1, m2) {
-    var h_level = m1.length;
-    return '<h' + h_level + '>' + _RunSpanGamut(m2) + '</h' + h_level + '>\n\n';
-  }
-  );
+    text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
+      function (wholeMatch, m1, m2) {
+        var h_level = m1.length;
+        return '<h' + h_level + '>' + _RunSpanGamut(m2) + '</h' + h_level + '>\n\n';
+      });
 
-  return text;
+    return text;
   }
 
   function _DoLists(text, isInsideParagraphlessListItem) {
@@ -1326,121 +1322,119 @@ if (typeof exports === 'object' && typeof require === 'function') {
   }
 
 
-  function _DoBlockQuotes(text) {
+    function _DoBlockQuotes(text) {
+      /*
+      text = text.replace(/
+      (                           // Wrap whole match in $1
+      (
+      ^[ \t]*>[ \t]?      // '>' at the start of a line
+      .+\n                // rest of the first line
+      (.+\n)*             // subsequent consecutive lines
+      \n*                 // blanks
+      )+
+      )
+      /gm, function(){...});
+      */
+      text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+        var bq = m1;
 
-    /*
-    text = text.replace(/
-    (                           // Wrap whole match in $1
-    (
-    ^[ \t]*>[ \t]?      // '>' at the start of a line
-    .+\n                // rest of the first line
-    (.+\n)*             // subsequent consecutive lines
-    \n*                 // blanks
-  )+
-  )
-  /gm, function(){...});
-  */
-
-  text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm,
-  function (wholeMatch, m1) {
-    var bq = m1;
-
-    // attacklab: hack around Konqueror 3.5.4 bug:
-    // "----------bug".replace(/^-/g,"") == "bug"
-
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '~0'); // trim one level of quoting
-
-    // attacklab: clean up hack
-    bq = bq.replace(/~0/g, '');
-
-    bq = bq.replace(/^[ \t]+$/gm, '');     // trim whitespace-only lines
-    bq = _RunBlockGamut(bq);             // recurse
-
-    bq = bq.replace(/(^|\n)/g, '$1  ');
-    // These leading spaces screw with <pre> content, so we need to fix that:
-    bq = bq.replace(
-      /(\s*<pre>[^\r]+?<\/pre>)/gm,
-      function (wholeMatch, m1) {
-        var pre = m1;
         // attacklab: hack around Konqueror 3.5.4 bug:
-        pre = pre.replace(/^  /mg, '~0');
-        pre = pre.replace(/~0/g, '');
-        return pre;
+        // "----------bug".replace(/^-/g,"") == "bug"
+
+        bq = bq.replace(/^[ \t]*>[ \t]?/gm, '~0'); // trim one level of quoting
+
+        // attacklab: clean up hack
+        bq = bq.replace(/~0/g, '');
+
+        bq = bq.replace(/^[ \t]+$/gm, '');     // trim whitespace-only lines
+        bq = _RunBlockGamut(bq);             // recurse
+
+        bq = bq.replace(/(^|\n)/g, '$1  ');
+        // These leading spaces screw with <pre> content, so we need to fix that:
+        bq = bq.replace(
+          /(\s*<pre>[^\r]+?<\/pre>)/gm,
+          function (wholeMatch, m1) {
+            var pre = m1;
+            // attacklab: hack around Konqueror 3.5.4 bug:
+            pre = pre.replace(/^  /mg, '~0');
+            pre = pre.replace(/~0/g, '');
+            return pre;
+          });
+
+        return hashBlock('<blockquote>\n' + bq + '\n</blockquote>');
       });
 
-      return hashBlock('<blockquote>\n' + bq + '\n</blockquote>');
+      return text;
     }
-  );
-  return text;
-  }
 
-  function _FormParagraphs(text, doNotUnhash, doNotCreateParagraphs) {
-    //
-    //  Params:
-    //    $text - string to process with html <p> tags
-    //
+    function _FormParagraphs(text, doNotUnhash, doNotCreateParagraphs) {
+      //
+      //  Params:
+      //    $text - string to process with html <p> tags
+      //
 
-    // Strip leading and trailing lines:
-    text = text.replace(/^\n+/g, '');
-    text = text.replace(/\n+$/g, '');
+      // Strip leading and trailing lines:
+      text = text.replace(/^\n+/g, '');
+      text = text.replace(/\n+$/g, '');
 
-    var grafs = text.split(/\n{2,}/g);
-    var grafsOut = [];
+      var grafs = text.split(/\n{2,}/g);
+      var grafsOut = [];
 
-    var markerRe = /~K(\d+)K/;
+      var markerRe = /~K(\d+)K/;
 
-    //
-    // Wrap <p> tags.
-    //
-    var end = grafs.length;
-    for (var i = 0; i < end; i++) {
-      var str = grafs[i];
-
-      // if this is an HTML marker, copy it
-      if (markerRe.test(str)) {
-        grafsOut.push(str);
-      }
-      else if (/\S/.test(str)) {
-        str = _RunSpanGamut(str);
-        str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? '' : '<p>');
-        if (!doNotCreateParagraphs) {
-          str += '</p>';
-        }
-        grafsOut.push(str);
-      }
-
-    }
-    //
-    // Unhashify HTML blocks
-    //
-    if (!doNotUnhash) {
-      end = grafsOut.length;
+      //
+      // Wrap <p> tags.
+      //
+      var end = grafs.length;
       for (var i = 0; i < end; i++) {
-        var foundAny = true;
-        while (foundAny) { // we may need several runs, since the data may be nested
-          foundAny = false;
-          grafsOut[i] = grafsOut[i].replace(/~K(\d+)K/g, function (wholeMatch, id) {
-            foundAny = true;
-            return g_html_blocks[id];
-          });
+        var str = grafs[i];
+
+        // if this is an HTML marker, copy it
+        if (markerRe.test(str)) {
+          grafsOut.push(str);
+        }
+        else if (/\S/.test(str)) {
+          str = _RunSpanGamut(str);
+          str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? '' : '<p>');
+          if (!doNotCreateParagraphs) {
+            str += '</p>';
+          }
+          grafsOut.push(str);
         }
       }
+
+      //
+      // Unhashify HTML blocks
+      //
+      if (!doNotUnhash) {
+        end = grafsOut.length;
+        for (var i = 0; i < end; i++) {
+          var foundAny = true;
+          while (foundAny) { // we may need several runs, since the data may be nested
+            foundAny = false;
+            grafsOut[i] = grafsOut[i].replace(/~K(\d+)K/g, function (wholeMatch, id) {
+              foundAny = true;
+              return g_html_blocks[id];
+            });
+          }
+        }
+      }
+
+      return grafsOut.join('\n\n');
     }
-    return grafsOut.join('\n\n');
-  }
 
-  function _EncodeAmpsAndAngles(text) {
-    // Smart processing for ampersands and angle brackets that need to be encoded.
+    function _EncodeAmpsAndAngles(text) {
+      // Smart processing for ampersands and angle brackets that need to be encoded.
 
-    // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
-    //   http://bumppo.net/projects/amputator/
-    text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
+      // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
+      //   http://bumppo.net/projects/amputator/
+      text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
 
-    // Encode naked <'s
-    text = text.replace(/<(?![a-z\/?!]|~D)/gi, '&lt;');
+      // Encode naked <'s
+      text = text.replace(/<(?![a-z\/?!]|~D)/gi, '&lt;');
 
-    return text;
-  }
+      return text;
+    }
 
     function _EncodeBackslashEscapes(text) {
       //
@@ -1464,9 +1458,9 @@ if (typeof exports === 'object' && typeof require === 'function') {
     }
 
     var charInsideUrl = '[-A-Z0-9+&@#/%?=~_|[\\]()!:,.;]',
-    charEndingUrl = '[-A-Z0-9+&@#/%=~_|[\\])]',
-    autoLinkRegex = new RegExp('(=\"|<)?\\b(https?|ftp)(://' + charInsideUrl + '*' + charEndingUrl + ')(?=$|\\W)', 'gi'),
-    endCharRegex = new RegExp(charEndingUrl, 'i');
+      charEndingUrl = '[-A-Z0-9+&@#/%=~_|[\\])]',
+      autoLinkRegex = new RegExp('(=\"|<)?\\b(https?|ftp)(://' + charInsideUrl + '*' +
+        charEndingUrl + ')(?=$|\\W)', 'gi'), endCharRegex = new RegExp(charEndingUrl, 'i');
 
     function handleTrailingParens(wholeMatch, lookbehind, protocol, link) {
       if (lookbehind) {
@@ -1519,12 +1513,12 @@ if (typeof exports === 'object' && typeof require === 'function') {
 
       //  autolink anything like <http://example.com>
 
-
       var replacer = function (wholematch, m1) {
         var url = attributeSafeUrl(m1);
 
         return '<a href=\"' + url + '\">' + pluginHooks.plainLinkText(m1) + '</a>';
       };
+
       text = text.replace(/<((https?|ftp):[^'">\s]+)>/gi, replacer);
 
       // Email addresses: <address@domain.foo>
@@ -1536,32 +1530,31 @@ if (typeof exports === 'object' && typeof require === 'function') {
       [-.\w]+
       \@
       [-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+
-    )
-    >
-    /gi, _DoAutoLinks_callback());
-    */
+      )
+      >
+      /gi, _DoAutoLinks_callback());
+      */
 
-    /* disabling email autolinking, since we don't do that on the server, either
-    text = text.replace(/<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi,
-    function(wholeMatch,m1) {
-    return _EncodeEmailAddress( unescapeSpecialChars(m1) );
-    }
-    );
-    */
-    return text;
+      /* disabling email autolinking, since we don't do that on the server, either
+      text = text.replace(/<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi,
+      function(wholeMatch,m1) {
+      return _EncodeEmailAddress( unescapeSpecialChars(m1) );
+      }
+      );
+      */
+      return text;
     }
 
     function unescapeSpecialChars(text) {
       //
       // Swap back in all the special characters we've hidden.
       //
-      text = text.replace(/~E(\d+)E/g,
-      function (wholeMatch, m1) {
+      text = text.replace(/~E(\d+)E/g, function (wholeMatch, m1) {
         var charCodeToReplace = parseInt(m1);
         return String.fromCharCode(charCodeToReplace);
-      }
-    );
-    return text;
+      });
+
+      return text;
     }
 
     function _Outdent(text) {
