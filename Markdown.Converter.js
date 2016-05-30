@@ -535,6 +535,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
     text = _EscapeSpecialCharsWithinTagAttributes(text);
     text = _EncodeBackslashEscapes(text);
 
+    text = _DoYoutube(text);
     // Process anchor and image tags. Images must come first,
     // because ![foo][f] looks like an anchor.
     text = _DoImages(text);
@@ -726,6 +727,19 @@ if (typeof exports === 'object' && typeof require === 'function') {
     return result;
   }
 
+  function _DoYoutube(text) {
+    if (text.indexOf('[!youtube]') === -1) {
+      return text;
+    }
+
+    text = text.replace(/\[!youtube\]\s?\([ \t]*(\S+)[ \t]*\)/g, function (wholeMatch, videoId) {
+      var result = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' +
+        videoId + '" frameborder="0" allowfullscreen></iframe>'
+      return result;
+    });
+    return text
+  }
+
   function _DoImages(text) {
     if (text.indexOf('![') === -1) {
       return text;
@@ -752,41 +766,42 @@ if (typeof exports === 'object' && typeof require === 'function') {
     \[
     (.*?)           // id = $3
     \]
-  )
-  ()()()()            // pad rest of backreferences
-  /g, writeImageTag);
-  */
-  text = text.replace(/(!\[(.*?)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g, writeImageTag);
+    )
+    ()()()()            // pad rest of backreferences
+    /g, writeImageTag);
+    */
+    text = text.replace(/(!\[(.*?)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g, writeImageTag);
 
-  //
-  // Next, handle inline images:  ![alt text](url "optional title")
-  // Don't forget: encode * and _
+    //
+    // Next, handle inline images:  ![alt text](url "optional title")
+    // Don't forget: encode * and _
 
-  /*
-  text = text.replace(/
-  (                   // wrap whole match in $1
-  !\[
-  (.*?)           // alt text = $2
-  \]
-  \s?             // One optional whitespace character
-  \(              // literal paren
-  [ \t]*
-  ()              // no id, so leave $3 empty
-  <?(\S+?)>?      // src url = $4
-  [ \t]*
-  (               // $5
-  (['"])      // quote char = $6
-  (.*?)       // title = $7
-  \6          // matching quote
-  [ \t]*
-  )?              // title is optional
-  \)
-  )
-  /g, writeImageTag);
-  */
-  text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g, writeImageTag);
+    /*
+    text = text.replace(/
+    (                   // wrap whole match in $1
+    !\[
+    (.*?)           // alt text = $2
+    \]
+    \s?             // One optional whitespace character
+    \(              // literal paren
+    [ \t]*
+    ()              // no id, so leave $3 empty
+    <?(\S+?)>?      // src url = $4
+    [ \t]*
+    (               // $5
+    (['"])      // quote char = $6
+    (.*?)       // title = $7
+    \6          // matching quote
+    [ \t]*
+    )?              // title is optional
+    \)
+    )
+    /g, writeImageTag);
+    */
+    text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
+      writeImageTag);
 
-  return text;
+    return text;
   }
 
   function attributeEncode(text) {

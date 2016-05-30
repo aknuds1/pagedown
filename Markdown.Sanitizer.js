@@ -18,8 +18,12 @@
   // <img src="url..." optional width  optional height  optional alt  optional title
   var img_white = /^(<img\ssrc="(https?:\/\/|\/)[-A-Za-z0-9+&@#\/%?=~_|!:,.;\(\)*[\]$]+"(\swidth="\d{1,3}")?(\sheight="\d{1,3}")?(\salt="[^"<>]*")?(\stitle="[^"<>]*")?\s?\/?>)$/i;
 
+  // <iframe optional width optional height src="Youtube URL" optional frameborder optional allowfullscreen>
+  var youtube_white = /^(<iframe\s(?:width="\d*"\s)?(?:height="\d*"\s)?src="https:\/\/www.youtube.com\/embed\/[-A-Za-z0-9+&@#\/%?=~_]+"(?:\sframeborder="0")?(?:\sallowfullscreen)?\s?>|<\/iframe>)$/i;
+
   function sanitizeTag(tag) {
-    if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white)) {
+    if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white) ||
+        tag.match(youtube_white)) {
       return tag;
     } else {
       return '';
