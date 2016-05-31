@@ -26,7 +26,7 @@
   var vimeo_white = /^(<iframe\ssrc="https:\/\/player\.vimeo\.com\/video\/[-A-Za-z0-9+&@#\/%?=~_]+\?color=ffffff"(?:\swidth="\d+")?(?:\sheight="\d+")(?:\sframeborder="\d+")?(?:\swebkitallowfullscreen)?(?:\smozallowfullscreen)?(?:\sallowfullscreen)?\s?>)$/i;
 
   // <iframe width height scrolling frameborder src="SoundCloud URL">
-  var soundcloud_white = /^(<iframe width="\d+" height="\d+" scrolling="[^"]+" frameborder="[^"]+" src="https:\/\/w\.soundcloud\.com\/[^"]+"\s?>)$/i;
+  var soundcloud_white = /^(<iframe width="[^"]+" height="[^"]+" scrolling="[^"]+" frameborder="[^"]+" src="https:\/\/w\.soundcloud\.com\/[^"]+"\s?>)$/i;
 
   function sanitizeTag(tag) {
     if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white) ||
