@@ -21,9 +21,12 @@
   // <iframe optional width optional height src="Youtube URL" optional frameborder optional allowfullscreen>
   var youtube_white = /^(<iframe\s(?:width="\d*"\s)?(?:height="\d*"\s)?src="https:\/\/www\.youtube\.com\/embed\/[-A-Za-z0-9+&@#\/%?=~_]+"(?:\sframeborder="0")?(?:\sallowfullscreen)?\s?>|<\/iframe>)$/i;
 
+  // <iframe src="Vimeo URL" optional width optional height optional framewborder optional webkitallowfullscreen
+  // optional mozallowfullscreen optional allowfullscreen>
   var vimeo_white = /^(<iframe\ssrc="https:\/\/player\.vimeo\.com\/video\/[-A-Za-z0-9+&@#\/%?=~_]+\?color=ffffff"(?:\swidth="\d+")?(?:\sheight="\d+")(?:\sframeborder="\d+")?(?:\swebkitallowfullscreen)?(?:\smozallowfullscreen)?(?:\sallowfullscreen)?\s?>)$/i;
 
-  var soundcloud_white = /^(<iframe width="100%" height="450" scrolling="no" frameborder="no" src="https:\/\/w\.soundcloud\.com\/player\/\?url=https%3A\/\/api\.soundcloud\.com\/tracks\/[^&]+&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true">)$/i;
+  // <iframe width height scrolling frameborder src="SoundCloud URL">
+  var soundcloud_white = /^(<iframe width="\d+" height="\d+" scrolling="[^"]+" frameborder="[^"]+" src="https:\/\/w\.soundcloud\.com\/[^"]+"\s?>)$/i;
 
   function sanitizeTag(tag) {
     if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white) ||
