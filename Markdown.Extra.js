@@ -1,7 +1,7 @@
 'use strict';
 (function () {
   var output;
-  if (typeof exports === "object" && typeof require === "function") {
+  if (typeof exports === 'object' && typeof require === 'function') {
     // we're in a CommonJS (e.g. Node.js) module
     output = exports;
   } else {
@@ -18,14 +18,14 @@
                                'mark|meter|object|param|progress|q|ruby|rp|rt|s|',
                                'samp|script|select|small|span|strike|strong|',
                                'sub|sup|textarea|time|tt|u|var|wbr)[^>]*>|',
-                               '<(br)\\s?\\/?>)$'].join(''), 'i');
+                               '<(br)\\s?\\/?>)$',].join(''), 'i');
 
   /******************************************************************
    * Utility Functions                                              *
    *****************************************************************/
 
   // patch for ie7
-  if (!Array.indexOf) {
+  if (Array.prototype.indexOf == null) {
     Array.prototype.indexOf = function(obj) {
       for (var i = 0; i < this.length; i++) {
         if (this[i] == obj) {
