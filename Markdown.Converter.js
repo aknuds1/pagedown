@@ -754,8 +754,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
 
     text = text.replace(/\[!vimeo\]\s?\([ \t]*(\S+)[ \t]*\)/g, function (wholeMatch, videoId) {
       var result = wrapVideoIframe('<iframe src="https://player.vimeo.com/video/' + videoId +
-        '?color=ffffff" width="640" height="360" frameborder="0" webkitallowfullscreen ' +
-        'mozallowfullscreen allowfullscreen></iframe>');
+        '?color=ffffff" width="640" height="360" frameborder="0" allowfullscreen></iframe>');
       return result;
     });
     return text
