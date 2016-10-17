@@ -730,7 +730,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
   }
 
   function wrapVideoIframe(html) {
-    return '<span class="markdown-video">\n  ' + html + '\n</span>';
+    return '<div class="markdown-video">\n  ' + html + '\n</div>';
   }
 
   function _DoYoutube(text) {
@@ -1445,7 +1445,14 @@ if (typeof exports === 'object' && typeof require === 'function') {
         }
         else if (/\S/.test(str)) {
           str = _RunSpanGamut(str);
-          str = str.replace(/^([ \t]*)/g, doNotCreateParagraphs ? '' : '<p>');
+          str = str.replace(/^([ \t]*)/g, function (match, p1, offset, string) {
+            if (/^<div\s*/.test(string.slice(offset + match.length))) {
+              // Don't wrap divs in paragraphs
+              return ''
+            } else {
+              return doNotCreateParagraphs ? '' : '<p>';
+            }
+          });
           if (!doNotCreateParagraphs) {
             str += '</p>';
           }
