@@ -11,15 +11,17 @@
   }
 
   // (tags that can be opened/closed) | (tags that stand alone)
-  var basic_tag_whitelist = /^(<\/?(b|blockquote|code|del|dd|dl|dt|em|h1|h2|h3|i|kbd|li|ol(?: start="\d+")?|p|pre|s|sup|sub|strong|strike|ul)>|<(br|hr)\s?\/?>)$/i;
+  var basic_tag_whitelist = /^(<\/?(div(?:\sclass=".[^"]+")?|b|blockquote|code|del|dd|dl|dt|em|h1|h2|h3|i|kbd|li|ol(?: start="\d+")?|p|pre|s|sup|sub|strong|strike|ul)>|<(br|hr)\s?\/?>)$/i;
   // <a href="url..." optional title>|</a>
   var a_white = /^(<a\shref="((https?|ftp):\/\/|\/)[-A-Za-z0-9+&@#\/%?=~_|!:,.;\(\)*[\]$]+"(\stitle="[^"<>]+")?\s?>|<\/a>)$/i;
 
   // <img src="url..." optional width  optional height  optional alt  optional title
   var img_white = /^(<img\ssrc="(https?:\/\/|\/)[-A-Za-z0-9+&@#\/%?=~_|!:,.;\(\)*[\]$]+"(\swidth="\d{1,3}(?:%|px)?")?(\sheight="\d{1,3}(?:%|px)?")?(\salt="[^"<>]*")?(\stitle="[^"<>]*")?\s?\/?>)$/i;
 
+  var close_iframe_white = /^(<\/iframe>)$/i;
+
   // <iframe optional width optional height src="Youtube URL" optional frameborder optional allowfullscreen>
-  var youtube_white = /^(<iframe\s(?:width="\d*"\s)?(?:height="\d*"\s)?src="https:\/\/www\.youtube\.com\/embed\/[-A-Za-z0-9+&@#\/%?=~_]+"(?:\sframeborder="0")?(?:\sallowfullscreen)?\s?>|<\/iframe>)$/i;
+  var youtube_white = /^(<iframe\s(?:width="\d*"\s)?(?:height="\d*"\s)?src="https:\/\/www\.youtube\.com\/embed\/[-A-Za-z0-9+&@#\/%?=~_]+"(?:\sframeborder="0")?(?:\sallowfullscreen)?\s?>)$/i;
 
   // <iframe src="Vimeo URL" optional width optional height optional framewborder optional webkitallowfullscreen
   // optional mozallowfullscreen optional allowfullscreen>
@@ -30,7 +32,8 @@
 
   function sanitizeTag(tag) {
     if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white) ||
-        tag.match(youtube_white) || tag.match(vimeo_white) || tag.match(soundcloud_white)) {
+        tag.match(close_iframe_white) || tag.match(youtube_white) || tag.match(vimeo_white) ||
+        tag.match(soundcloud_white)) {
       return tag;
     } else {
       return '';
