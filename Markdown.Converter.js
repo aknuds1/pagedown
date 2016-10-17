@@ -730,7 +730,7 @@ if (typeof exports === 'object' && typeof require === 'function') {
   }
 
   function wrapVideoIframe(html) {
-    return '<div class="markdown-video">\n  ' + html + '\n</div>';
+    return '<span class="markdown-video">\n  ' + html + '\n</span>';
   }
 
   function _DoYoutube(text) {
