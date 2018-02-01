@@ -1,4 +1,4 @@
-#PageDown
+# PageDown
 This is a modified version of PageDown, the Markdown editor used on [Stack Overflow](https://stackoverflow.com)
 and the other [Stack Exchange](https://stackexchange.com) sites.
 
