@@ -1,5 +1,31 @@
 'use strict';
 // Needs Markdown.Converter.js at the moment
+const forEach = require('ramda/src/forEach')
+const toPairs = require('ramda/src/toPairs')
+const S = require('underscore.string.fp')
+const h = require('@arve.knudsen/hyperscript')
+const t = require('tcomb')
+
+// Have to use SVG namespace when creating SVG icons, otherwise they will not display
+const createIconElem = (name, opts={}) => {
+  const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  const classes = opts.classes || []
+  let classesStr = S.join(' ', classes)
+  if (classes.length > 0) {
+    classesStr = ` ${classesStr}`
+  }
+  forEach(([name, listener,]) => {
+    svgElem.addEventListener(name, listener)
+  }, toPairs(opts.eventListeners || []))
+  svgElem.setAttribute('class', `icon icon-${name}${classesStr}`)
+  svgElem.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xlink',
+    'http://www.w3.org/1999/xlink')
+  const useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+  useElem.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
+      `#icon-${name}`)
+  svgElem.appendChild(useElem)
+  return svgElem
+}
 
 (function () {
   var util = {},
@@ -552,7 +578,7 @@
     function doClick(button) {
       inputBox.focus();
 
-      if (button.textOp) {
+      if (button.textOp != null) {
         undoManager.setCommandMode();
 
         var state = new TextareaState(panels);
@@ -628,37 +654,42 @@
       setupButton(buttons.redo, undoManager.canRedo());
     }
 
-    function makeSpritedButtonRow() {
+    const makeButtonRow = () => {
       var buttonBar = panels.buttonBar;
-      var buttonRow = document.createElement("div");
-      buttonRow.id = "wmd-button-row" + postfix;
-      buttonRow.className = 'wmd-button-row';
-      buttonRow.style.display = 'flex';
-      buttonRow.style['align-items'] = 'center';
-      buttonRow = buttonBar.appendChild(buttonRow);
+      const buttonRow = h(`#wmd-button-row${postfix}.wmd-button-row`, {
+        style: {
+          display: 'flex',
+          'align-items': 'center',
+        },
+      });
+      buttonBar.appendChild(buttonRow);
 
-      var makeButton = function (id, name, textOp, icon) {
-        var button = document.createElement("span");
-        button.className = "wmd-button icon-" + options.icons[icon || name];
-        button.id = id + postfix;
-        button.title = getString(name);
-        if (textOp) {
-          button.textOp = textOp;
+      const makeButton = (id, name, textOp, icon) => {
+        t.String(id, ['id',])
+        t.String(name, ['name',])
+        if (icon != null) {
+          t.String(icon, ['icon',])
         }
-        setupButton(button, true);
-        buttonRow.appendChild(button);
-        return button;
+        const iconName = (options.icons || {})[icon || name]
+        const button = h(`span#${id}${postfix}.wmd-button`, [createIconElem(iconName)])
+        button.title = getString(name)
+        if (textOp != null) {
+          t.Function(textOp, ['textOp',])
+          button.textOp = textOp
+        }
+        setupButton(button, true)
+        buttonRow.appendChild(button)
+        return button
       };
 
-      var makeSpacer = function () {
-        var spacer = document.createElement("span");
-        spacer.className = "wmd-spacer";
+      const makeSpacer = () => {
+        const spacer = h('span.wmd-spacer');
         buttonRow.appendChild(spacer);
       };
 
       buttons.bold = makeButton("wmd-bold-button", "bold", bindCommand("doBold"));
       buttons.italic = makeButton("wmd-italic-button", "italic", bindCommand("doItalic"));
-      makeSpacer(1);
+      makeSpacer();
       buttons.link = makeButton("wmd-link-button", "link", bindCommand(
         function (chunk, postProcessing) {
           return this.doLinkOrImage(chunk, postProcessing, false);
@@ -671,7 +702,7 @@
         })
       );
 
-      makeSpacer(2);
+      makeSpacer();
       buttons.olist = makeButton("wmd-olist-button", "olist",
         bindCommand(function (chunk, postProcessing) {
           this.doList(chunk, postProcessing, true);
@@ -682,18 +713,18 @@
         }));
       buttons.heading = makeButton("wmd-heading-button", "heading", bindCommand("doHeading"));
       buttons.hr = makeButton("wmd-hr-button", "hr", bindCommand("doHorizontalRule"));
-      makeSpacer(3);
+      makeSpacer();
       buttons.undo = makeButton("wmd-undo-button", "undo", null);
-      buttons.undo.execute = function (manager) {
-        if (manager) {
-          manager.undo();
+      buttons.undo.execute = (manager) => {
+        if (manager != null) {
+          manager.undo()
         }
       };
 
       var redoTitle = /win/.test(nav.platform.toLowerCase()) ? "redo" : "redomac";
 
       buttons.redo = makeButton("wmd-redo-button", redoTitle, null, "redo");
-      buttons.redo.execute = function (manager) {
+      buttons.redo.execute = (manager) => {
         if (manager) {
           manager.redo();
         }
@@ -710,7 +741,7 @@
       setUndoRedoButtonStates();
     }
 
-    makeSpritedButtonRow();
+    makeButtonRow();
 
     var keyEvent = "keydown";
     if (uaSniffed.isOpera) {
@@ -1187,7 +1218,7 @@
   // UNFINISHED
   // The assignment in the while loop makes jslint cranky.
   // I'll change it to a better loop later.
-  position.getTop = function (elem, isInner) {
+  position.getTop = (elem, isInner) => {
     var result = elem.offsetTop;
     if (!isInner) {
       while ((elem = elem.offsetParent)) {
@@ -1197,11 +1228,11 @@
     return result;
   };
 
-  position.getHeight = function (elem) {
+  position.getHeight = (elem) => {
     return elem.offsetHeight || elem.scrollHeight;
   };
 
-  position.getWidth = function (elem) {
+  position.getWidth = (elem) => {
     return elem.offsetWidth || elem.scrollWidth;
   };
 
@@ -1239,8 +1270,8 @@
       innerHeight = doc.body.clientHeight;
     }
 
-    var maxWidth = Math.max(scrollWidth, innerWidth);
-    var maxHeight = Math.max(scrollHeight, innerHeight);
+    const maxWidth = Math.max(scrollWidth, innerWidth);
+    const maxHeight = Math.max(scrollHeight, innerHeight);
     return [maxWidth, maxHeight, innerWidth, innerHeight, ];
   };
 
@@ -1249,35 +1280,32 @@
   // Most of this has been moved to CSS but the div creation and
   // browser-specific hacks remain here.
   ui.createBackground = function () {
-    var background = doc.createElement("div"),
-    style = background.style;
-
-    background.className = "wmd-prompt-background";
-
-    style.position = "absolute";
-    style.top = "0";
-
-    style.zIndex = "1000";
-
+    const style = {
+      position: 'absolute',
+      top: '0',
+      zIndex: '1000',
+    }
     if (uaSniffed.isIe) {
-      style.filter = "alpha(opacity=50)";
+      style.filter = 'alpha(opacity=50)'
     }
     else {
-      style.opacity = "0.5";
+      style.opacity = '0.5'
     }
 
-    var pageSize = position.getPageSize();
-    style.height = pageSize[1] + "px";
+    style.height = `${position.getPageSize()[1]}px`
 
     if (uaSniffed.isIe) {
-      style.left = doc.documentElement.scrollLeft;
-      style.width = doc.documentElement.clientWidth;
+      style.left = doc.documentElement.scrollLeft
+      style.width = doc.documentElement.clientWidth
     }
     else {
-      style.left = "0";
-      style.width = "100%";
+      style.left = '0'
+      style.width = '100%'
     }
 
+    const background = h('.wmd-prompt-background', {
+      style,
+    })
     doc.body.appendChild(background);
     return background;
   };
