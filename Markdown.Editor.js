@@ -1,10 +1,264 @@
 'use strict';
 // Needs Markdown.Converter.js at the moment
+
 const forEach = require('ramda/src/forEach')
 const toPairs = require('ramda/src/toPairs')
 const S = require('underscore.string.fp')
 const h = require('@arve.knudsen/hyperscript')
 const t = require('tcomb')
+const map = require('ramda/src/map')
+const partial = require('ramda/src/partial')
+
+const MARKDOWN_MANUAL = {
+  Links: `<p>In most cases, a plain URL will be recognized as such and automatically linked:<p>
+<pre>Read all about Markdown at https://en.wikipedia.org/wiki/Markdown.
+Use angle brackets to force linking: I visit
+&lt;https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet&gt; daily.</pre>
+<p>To create fancier links, use Markdown:</p>
+<pre>Here's [a link](http://www.example.com/)! And a reference-style link to [a panda][1].
+References don't have to be [numbers][about].
+
+[1]: http://notfound.example.com/
+[about]: https://experimental.berlin/about</pre>
+<p>You can add tooltips to links:</p>
+<pre>
+Click [here](http://example.com<span class='spaces'>&nbsp;</span>'this text appears when you mouse over')!
+This works with [reference links][blog] as well.
+
+[blog]: http://arveknudsen.com/<span class='spaces'>&nbsp;</span>'click here for updates'</pre>
+`,
+  Images: `<p>Images are exactly like links, but they have an exclamation point in front of them:
+</p>
+<pre>
+![maro!](https://static.boredpanda.com/blog/wp-content/uploads/2017/04/dining-with-dressed-cat-maro-japan-12-58f46ad625211__700.jpg)
+![maro][1]
+
+[1]: https://static.boredpanda.com/blog/wp-content/uploads/2017/04/dining-with-dressed-cat-maro-japan-12-58f46ad625211__700.jpg 'tooltip'</pre>
+<p>
+The word in square brackets is the alt text, which gets displayed if the browser can't show the
+image. Be sure to include meaningful alt text for screen-reading software.
+</p>
+`,
+'Styling/Headers': `<div class='col-container'>
+<div class='col1'>
+  <p>Be sure to use text styling sparingly; only where it helps readability.</p>
+  <pre>
+*This is italicized*, and so
+is _this_.
+
+**This is bold**, just like __this__.
+
+You can ***combine*** them
+if you ___really have to___.</pre>
+</div>
+<div class='col2'>
+  <p>To break your text into sections, you can use headers:</p>
+  <pre>A Large Header
+==============
+
+Smaller Subheader
+-----------------</pre>
+<p>Use hash marks if you need several levels of headers:</p>
+<pre>
+# Header 1 #
+## Header 2 ##
+### Header 3 ###</pre>
+</div>
+</div>
+`,
+  Lists: `<p>Both bulleted and numbered lists are possible:</p>
+<div class='col-container'>
+<div class='col1'>
+  <pre>-<span class='spaces'>&nbsp;</span>Use a minus sign for a bullet
++<span class='spaces'>&nbsp;</span>Or a plus sign
+*<span class='spaces'>&nbsp;</span>Or an asterisk
+
+1.<span class='spaces'>&nbsp;</span>Numbered lists are easy
+2.<span class='spaces'>&nbsp;</span>Markdown keeps track of
+the numbers for you
+7.<span class='spaces'>&nbsp;</span>So this will be item 3.</pre>
+</div>
+<div class='col2'>
+  <pre>1.<span class='spaces'>&nbsp;</span>Lists in a list item:
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>-<span class='spaces'>&nbsp;</span>Indented four spaces.
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>*<span class='spaces'>&nbsp;</span>indented eight spaces.
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>-<span class='spaces'>&nbsp;</span>Four spaces again.
+2.<span class='spaces'>&nbsp;&nbsp;</span>You can have multiple
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>paragraphs in a list items.
+<span class='spaces'>&nbsp;</span>
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>Just be sure to indent.</pre>
+</div>
+</div>
+`,
+  Blockquotes: `<div class='col-container'>
+<div class='col1'>
+  <pre>> Create a blockquote by
+> prepending “>” to each line.
+>
+> Other formatting also works here, e.g.
+>
+> 1. Lists or
+> 2. Headings:
+>
+> ## Quoted Heading ##</pre>
+</div>
+<div class='col2'>
+  <p>You can even put blockquotes in blockquotes:</p>
+  <pre>> A standard blockquote is indented
+> > A nested blockquote is indented more
+> > > > You can nest to any depth.</pre>
+</div>
+</div>
+`,
+  Code: `<p>To create code blocks or other preformatted text, indent by four spaces:</p>
+<pre>
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>This will be displayed in a monospaced font. The first four spaces
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>will be stripped off, but all other whitespace will be preserved.
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>Markdown and HTML are turned off in code blocks:
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;</span>&lt;i&gt;This is not italic&lt;/i&gt;, and [this is not a link](http://example.com)
+</pre>
+<p>To create not a block, but an inline code span, use backticks:</p>
+<pre>
+git clone git@github.com:aknuds1/pagedown.git.
+</pre>
+<p>If you want to have a preformatted block within a list, indent by eight spaces:</p>
+<pre>
+1. This is normal text.
+2. So is this, but now follows a code block:
+<span class='spaces'>&nbsp;</span>
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Skip a line and indent eight spaces.
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>That's four spaces for the list
+<span class='spaces'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>and four to trigger the code block.
+</pre>
+`,
+  HTML: `<p>If you need to do something that Markdown can't handle, use HTML. Note that we only
+support a very strict subset of HTML!</p>
+<pre>
+Building synths is &lt;strike&gt;fun&lt;/strike&gt;.
+</pre>
+<p>Markdown is smart enough not to mangle your span-level HTML:</p>
+<pre>
+&lt;b&gt;Markdown works *fine* in here.&lt;/b&gt;
+</pre>
+<p>Block-level HTML elements have a few restrictions:</p>
+<ol>
+<li>They must be separated from surrounding text by blank lines.</li>
+<li>The begin and end tags of the outermost block element must not be indented.</li>
+<li>Markdown can't be used within HTML blocks.</li>
+</ol>
+
+<pre>
+&lt;pre&gt;
+You can &lt;em&gt;not&lt/em&gt; use Markdown in here.
+&lt;/pre&gt;
+</pre>
+`,
+}
+
+let selectedHelpItem = null
+
+const resizeHelp = () => {
+  const helpContainer = document.getElementById('wmd-help-container')
+  const clone = helpContainer.cloneNode(true)
+  clone.style.position = 'absolute'
+  clone.style.visibility = 'hidden'
+  clone.style.height = 'auto'
+  document.body.appendChild(clone)
+  const height = clone.offsetHeight
+  clone.remove()
+  helpContainer.style.height = `${height}px`
+}
+
+const createHelpContainer = (id, children) => {
+  return h(`#${id}`, {
+    style: {
+      'box-sizing': 'border-box',
+      height: '0',
+      overflow: 'hidden',
+      'max-height': '9999px',
+    },
+  }, children)
+}
+
+const toggleHelp = () => {
+  const helpContainer = document.getElementById('wmd-help-container')
+  const helpContentContainer = document.getElementById('wmd-help-content-container')
+  if (helpContainer.offsetHeight === 0) {
+    resizeHelp()
+  } else {
+    helpContainer.style.height = 0
+    helpContentContainer.style.height = 0
+    selectedHelpItem = null
+  }
+}
+
+const toggleHelpItem = (topic, event) => {
+  event.preventDefault()
+  event.stopPropagation()
+
+  t.String(topic, ['topic',])
+  t.Object(event.target, ['event', 'target',])
+  const item = event.target
+  const helpContentContainer = document.getElementById('wmd-help-content-container')
+
+  if (selectedHelpItem != null) {
+    selectedHelpItem.classList.remove('selected')
+    if (selectedHelpItem === event.target) {
+      helpContentContainer.style.height = 0
+      selectedHelpItem = null
+      resizeHelp()
+      return
+    }
+  }
+
+  event.target.classList.add('selected')
+  helpContentContainer.style.height = 'auto'
+  const helpContent = helpContentContainer.querySelector('.wmd-help-content')
+  helpContent.innerHTML = MARKDOWN_MANUAL[topic]
+  selectedHelpItem = event.target
+  resizeHelp()
+}
+
+const makeHelpSection = (buttonBar, idPostfix) => {
+  t.Object(buttonBar, ['buttonBar'])
+  t.String(idPostfix, ['idPostfix'])
+  const helpContainer = createHelpContainer('wmd-help-container', [
+    h(`#wmd-help-row-${idPostfix}.wmd-help-row`, {
+      style: {
+        'box-sizing': 'border-box',
+      },
+    }, h('ul', {
+      style: {
+        padding: '0',
+        margin: '0',
+      },
+    }, map((topic) => {
+      return h('li.wmd-help-item', {
+        style: {
+          'list-style': 'none',
+          padding: '6px',
+          display: 'inline-block',
+          'margin-right': '8px',
+        },
+      }, [
+        h('a.wmd-help-item-link', {
+          attrs: {
+            href: '#',
+          },
+          onclick: partial(toggleHelpItem, [topic,]),
+          style: {
+            'text-decoration': 'none',
+            color: 'black',
+          },
+        }, topic),
+      ])
+    }, ['Links', 'Images', 'Styling/Headers', 'Lists', 'Blockquotes', 'Code', 'HTML',]))),
+    createHelpContainer('wmd-help-content-container',
+      h(`#wmd-help-${idPostfix}.wmd-help-content`)),
+  ])
+  buttonBar.appendChild(helpContainer)
+}
 
 // Have to use SVG namespace when creating SVG icons, otherwise they will not display
 const createIconElem = (name, opts={}) => {
@@ -730,18 +984,16 @@ const createIconElem = (name, opts={}) => {
         }
       };
 
-      var helpOptions = options.helpButton;
-      if (helpOptions != null) {
-        var helpButton = makeButton('wmd-help-button', 'help');
-        helpButton.style['margin-left'] = 'auto';
-        helpButton.isHelp = true;
-        helpButton.onclick = helpOptions.handler;
-      }
+      const helpButton = makeButton('wmd-help-button', 'help')
+      helpButton.style['margin-left'] = 'auto'
+      helpButton.isHelp = true
+      helpButton.onclick = toggleHelp
 
       setUndoRedoButtonStates();
     }
 
-    makeButtonRow();
+    makeButtonRow()
+    makeHelpSection(panels.buttonBar, postfix)
 
     var keyEvent = "keydown";
     if (uaSniffed.isOpera) {
