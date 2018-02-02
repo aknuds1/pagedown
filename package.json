@@ -1,6 +1,6 @@
 {
   "name": "@arve.knudsen/pagedown",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Markdown converter, based on Showdown",
   "repository": {
     "type": "git",
