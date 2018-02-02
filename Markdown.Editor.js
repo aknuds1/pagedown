@@ -135,7 +135,7 @@ git clone git@github.com:aknuds1/pagedown.git.
   HTML: `<p>If you need to do something that Markdown can't handle, use HTML. Note that we only
 support a very strict subset of HTML!</p>
 <pre>
-Building synths is &lt;strike&gt;fun&lt;/strike&gt;.
+Markdown is &lt;em&gt;easy&lt;/em&gt;.
 </pre>
 <p>Markdown is smart enough not to mangle your span-level HTML:</p>
 <pre>
@@ -158,23 +158,11 @@ You can &lt;em&gt;not&lt/em&gt; use Markdown in here.
 
 let selectedHelpItem = null
 
-const resizeHelp = () => {
-  const helpContainer = document.getElementById('wmd-help-container')
-  const clone = helpContainer.cloneNode(true)
-  clone.style.position = 'absolute'
-  clone.style.visibility = 'hidden'
-  clone.style.height = 'auto'
-  document.body.appendChild(clone)
-  const height = clone.offsetHeight
-  clone.remove()
-  helpContainer.style.height = `${height}px`
-}
-
 const createHelpContainer = (id, children) => {
   return h(`#${id}`, {
     style: {
       'box-sizing': 'border-box',
-      height: '0',
+      display: 'none',
       overflow: 'hidden',
       'max-height': '9999px',
     },
@@ -184,11 +172,10 @@ const createHelpContainer = (id, children) => {
 const toggleHelp = () => {
   const helpContainer = document.getElementById('wmd-help-container')
   const helpContentContainer = document.getElementById('wmd-help-content-container')
-  if (helpContainer.offsetHeight === 0) {
-    resizeHelp()
+  if (helpContainer.style.display === 'none') {
+    helpContainer.style.display = 'block'
   } else {
-    helpContainer.style.height = 0
-    helpContentContainer.style.height = 0
+    helpContainer.style.display = 'none'
     selectedHelpItem = null
   }
 }
@@ -205,26 +192,24 @@ const toggleHelpItem = (topic, event) => {
   if (selectedHelpItem != null) {
     selectedHelpItem.classList.remove('selected')
     if (selectedHelpItem === event.target) {
-      helpContentContainer.style.height = 0
+      helpContentContainer.style.display = 'none'
       selectedHelpItem = null
-      resizeHelp()
       return
     }
   }
 
   event.target.classList.add('selected')
-  helpContentContainer.style.height = 'auto'
+  helpContentContainer.style.display = 'block'
   const helpContent = helpContentContainer.querySelector('.wmd-help-content')
   helpContent.innerHTML = MARKDOWN_MANUAL[topic]
   selectedHelpItem = event.target
-  resizeHelp()
 }
 
 const makeHelpSection = (buttonBar, idPostfix) => {
   t.Object(buttonBar, ['buttonBar'])
   t.String(idPostfix, ['idPostfix'])
   const helpContainer = createHelpContainer('wmd-help-container', [
-    h(`#wmd-help-row-${idPostfix}.wmd-help-row`, {
+    h(`#wmd-help-row${idPostfix}.wmd-help-row`, {
       style: {
         'box-sizing': 'border-box',
       },
@@ -255,7 +240,7 @@ const makeHelpSection = (buttonBar, idPostfix) => {
       ])
     }, ['Links', 'Images', 'Styling/Headers', 'Lists', 'Blockquotes', 'Code', 'HTML',]))),
     createHelpContainer('wmd-help-content-container',
-      h(`#wmd-help-${idPostfix}.wmd-help-content`)),
+      h(`#wmd-help${idPostfix}.wmd-help-content`)),
   ])
   buttonBar.appendChild(helpContainer)
 }
