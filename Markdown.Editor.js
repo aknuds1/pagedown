@@ -895,7 +895,12 @@ const createIconElem = (name, opts={}) => {
 
     const makeButtonRow = () => {
       var buttonBar = panels.buttonBar;
-      const buttonRow = h(`#wmd-button-row${postfix}.wmd-button-row`, {
+      const buttonRowId = `wmd-button-row${postfix}`
+      const previousButtonRow = buttonBar.querySelector(`#${buttonRowId}`)
+      if (previousButtonRow != null) {
+        buttonBar.removeChild(previousButtonRow)
+      }
+      const buttonRow = h(`#${buttonRowId}.wmd-button-row`, {
         style: {
           display: 'flex',
           'align-items': 'center',
