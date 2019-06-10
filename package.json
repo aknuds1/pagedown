@@ -21,8 +21,8 @@
   "homepage": "https://github.com/aknuds1/pagedown",
   "dependencies": {
     "@arve.knudsen/hyperscript": "^2.2.1",
-    "ramda": "^0.25.0",
-    "tcomb": "^3.2.24",
-    "underscore.string.fp": "^1.0.4"
-  }
+    "ramda": "^0.26.1",
+    "tcomb": "^3.2.29"
+  },
+  "devDependencies": {}
 }

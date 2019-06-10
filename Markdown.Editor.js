@@ -3,11 +3,11 @@
 
 const forEach = require('ramda/src/forEach')
 const toPairs = require('ramda/src/toPairs')
-const S = require('underscore.string.fp')
 const h = require('@arve.knudsen/hyperscript')
 const t = require('tcomb')
 const map = require('ramda/src/map')
 const partial = require('ramda/src/partial')
+const join = require('ramda/src/join')
 
 const MARKDOWN_MANUAL = {
   Links: `<p>In most cases, a plain URL will be recognized as such and automatically linked:<p>
@@ -249,7 +249,7 @@ const makeHelpSection = (buttonBar, idPostfix) => {
 const createIconElem = (name, opts={}) => {
   const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   const classes = opts.classes || []
-  let classesStr = S.join(' ', classes)
+  let classesStr = join(' ', classes)
   if (classes.length > 0) {
     classesStr = ` ${classesStr}`
   }
