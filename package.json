@@ -24,5 +24,8 @@
     "ramda": "^0.26.1",
     "tcomb": "^3.2.29"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "volta": {
+    "node": "13.5.0"
+  }
 }
